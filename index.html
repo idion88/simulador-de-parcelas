@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Parcelas</title>
+    <style>
+        /* Variáveis de Cores - Tema Claro (Padrão) */
+        :root {
+            --cor-fundo: #f0f4f8;
+            --cor-container: #ffffff;
+            --cor-texto: #2c3e50;
+            --cor-texto-secundario: #34495e;
+            --cor-borda: #bdc3c7;
+            --cor-destaque: #3498db;
+            --cor-resultado: #27ae60;
+            --cor-aviso: #e74c3c;
+            --cor-sombra: rgba(0,0,0,0.1);
+            --cor-botao-tema: #e0e0e0;
+            --cor-botao-tema-hover: #d0d0d0;
+        }
+
+        /* Variáveis de Cores - Tema Escuro */
+        .tema-escuro {
+            --cor-fundo: #121212;
+            --cor-container: #1e1e1e;
+            --cor-texto: #f1f1f1;
+            --cor-texto-secundario: #e0e0e0;
+            --cor-borda: #444444;
+            --cor-destaque: #5dade2;
+            --cor-resultado: #219653;
+            --cor-aviso: #ff5252;
+            --cor-sombra: rgba(255,255,255,0.05);
+            --cor-botao-tema: #333333;
+            --cor-botao-tema-hover: #444444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+            transition: background-color 0.3s, color 0.3s; /* Transição suave */
+        }
+        body {
+            background-color: var(--cor-fundo);
+            padding: 15px;
+            position: relative;
+        }
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: var(--cor-container);
+            padding: 18px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px var(--cor-sombra);
+            position: relative;
+        }
+
+        /* Botão DISCRETO de Tema */
+        .botao-tema {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background-color: var(--cor-botao-tema);
+            color: var(--cor-texto);
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.7;
+            transition: opacity 0.3s, background-color 0.3s;
+            z-index: 10;
+        }
+        .botao-tema:hover {
+            opacity: 1;
+            background-color: var(--cor-botao-tema-hover);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--cor-texto);
+            margin-bottom: 18px;
+            font-size: 18px;
+            margin-top: 15px; /* Espaço para o botão discreto */
+        }
+        .campos {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .campo {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            font-weight: bold;
+            color: var(--cor-texto-secundario);
+            margin-bottom: 4px;
+            font-size: 13px;
+        }
+        input {
+            padding: 8px 6px;
+            border: 2px solid var(--cor-borda);
+            border-radius: 6px;
+            font-size: 15px;
+            height: 40px;
+            text-align: center;
+            width: 100%;
+            background-color: var(--cor-container);
+            color: var(--cor-texto);
+        }
+        input:focus {
+            outline: none;
+            border-color: var(--cor-destaque);
+        }
+        .resultado {
+            padding: 18px;
+            border-radius: 8px;
+            background-color: var(--cor-resultado);
+            color: white;
+        }
+        .item {
+            margin: 10px 0;
+            font-size: 16px;
+            text-align: center;
+        }
+        .valor {
+            font-weight: bold;
+            font-size: 18px;
+            display: block;
+            margin-top: 3px;
+        }
+        .aviso {
+            margin-top: 15px;
+            text-align: center;
+            color: var(--cor-aviso);
+            font-size: 13px;
+            display: none;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Botão discreto de tema -->
+        <button class="botao-tema" id="alternarTema" title="Alternar Tema">
+            🌙
+        </button>
+
+        <h1>📊 Simulador de Parcelas</h1>
+
+        <div class="campos">
+            <div class="campo">
+                <label for="valor">Valor Desejado (R$):</label>
+                <input type="number" id="valor" value="100" min="1" step="0.01" onkeydown="return event.key !== '-'">
+            </div>
+            <div class="campo">
+                <label for="parcelas">Qtd de Parcelas:</label>
+                <input type="number" id="parcelas" value="1" min="1" max="21" onkeydown="return event.key !== '-'">
+            </div>
+        </div>
+
+        <div class="resultado">
+            <!-- AQUI REMOVI A LINHA DO VALOR TOTAL -->
+            <div class="item">Valor de cada Parcela:
+                <span id="parcelaFinal" class="valor">0,00</span>
+            </div>
+        </div>
+
+        <div class="aviso" id="aviso">Quantidade de parcelas deve ser entre 1 e 21!</div>
+    </div>
+
+    <script>
+        const botaoAlternarTema = document.getElementById('alternarTema');
+        const corpoPagina = document.body;
+
+        // Verifica se já existe tema salvo
+        if (localStorage.getItem('temaSimuladorParcelas') === 'escuro') {
+            corpoPagina.classList.add('tema-escuro');
+            botaoAlternarTema.textContent = '☀️';
+        }
+
+        // Função para alternar tema
+        botaoAlternarTema.addEventListener('click', () => {
+            corpoPagina.classList.toggle('tema-escuro');
+            
+            if (corpoPagina.classList.contains('tema-escuro')) {
+                localStorage.setItem('temaSimuladorParcelas', 'escuro');
+                botaoAlternarTema.textContent = '☀️';
+                botaoAlternarTema.title = 'Tema Claro';
+            } else {
+                localStorage.setItem('temaSimuladorParcelas', 'claro');
+                botaoAlternarTema.textContent = '🌙';
+                botaoAlternarTema.title = 'Tema Escuro';
+            }
+        });
+
+        const taxasPrimeiro = {
+            1: 1.100, 2: 1.110, 3: 1.118, 4: 1.118, 5: 1.125,
+            6: 1.125, 7: 1.127, 8: 1.127, 9: 1.127, 10: 1.128,
+            11: 1.137, 12: 1.137, 13: 1.170, 14: 1.170, 15: 1.170,
+            16: 1.200, 17: 1.200, 18: 1.200, 19: 1.240, 20: 1.240, 21: 1.240
+        };
+
+        const taxasSegundo = {
+            1: 1.15,  2: 1.20,  3: 1.25,  4: 1.30,  5: 1.35,
+            6: 1.40,  7: 1.45,  8: 1.50,  9: 1.55, 10: 1.60,
+           11: 1.65, 12: 1.70, 13: 1.75, 14: 1.85, 15: 1.90,
+           16: 1.95, 17: 2.00, 18: 2.05, 19: 2.10, 20: 2.15,
+           21: 2.20
+        };
+
+        function arredondarRegraNova(valor) {
+            let resto = valor % 10;
+            if (resto >= 0.01 && resto <= 5.00) {
+                return valor - resto + 5.00;
+            } else if (resto > 5.00 && resto <= 9.99) {
+                return valor - resto + 10.00;
+            } else {
+                return valor;
+            }
+        }
+
+        const inputValor = document.getElementById('valor');
+        const inputParcelas = document.getElementById('parcelas');
+        const aviso = document.getElementById('aviso');
+        const parcelaFinalEl = document.getElementById('parcelaFinal');
+
+        function calcular() {
+            const valor = parseFloat(inputValor.value) || 0;
+            const qtd = parseInt(inputParcelas.value) || 0;
+
+            if(qtd < 1 || qtd > 21) {
+                aviso.textContent = "Quantidade de parcelas deve ser entre 1 e 21!";
+                aviso.style.display = 'block';
+                return;
+            }
+
+            if (!taxasPrimeiro[qtd] || !taxasSegundo[qtd]) {
+                aviso.textContent = "Taxa não definida para essa quantidade de parcelas!";
+                aviso.style.display = 'block';
+                return;
+            } else {
+                aviso.style.display = 'none';
+            }
+
+            const total1 = valor * taxasPrimeiro[qtd];
+            const totalFinalBruto = total1 * taxasSegundo[qtd];
+            const totalFinal = arredondarRegraNova(totalFinalBruto);
+            const parcelaBruta = totalFinal / qtd;
+            const parcelaFinal = arredondarRegraNova(parcelaBruta);
+
+            parcelaFinalEl.textContent = parcelaFinal.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+        }
+
+        inputValor.addEventListener('input', calcular);
+        inputParcelas.addEventListener('input', calcular);
+        calcular();
+    </script>
+</body>
+</html>
