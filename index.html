@@ -80,6 +80,9 @@ label{display:block;font-size:.78rem;font-weight:600;margin:.7rem 0 .35rem;color
 .cli-pick label{display:flex;align-items:center;gap:.55rem;font-size:.85rem;font-weight:500;color:var(--ink);margin:.15rem 0;padding:.35rem 0;border-bottom:1px solid var(--line-soft);cursor:pointer}
 .cli-pick label:last-child{border-bottom:none}
 .cli-pick input[type=checkbox]{width:auto}
+.sel-list{border-color:rgba(76,196,126,.45);background:rgba(76,196,126,.05)}
+.sel-list .rm{margin-left:auto;background:rgba(240,105,125,.15);color:#f0697d;border:none;border-radius:7px;font-weight:800;padding:.15rem .55rem;cursor:pointer;font-size:.8rem}
+.sel-list label,.cli-pick label{display:flex;align-items:center;gap:.45rem}
 .badge-src{font-size:.62rem;font-weight:800;border-radius:6px;padding:.1rem .35rem;letter-spacing:.03em}
 .badge-src.np{background:rgba(59,155,224,.18);color:#6db9ef}
 .badge-src.kv{background:rgba(76,196,126,.18);color:#4cc47e}
@@ -183,7 +186,9 @@ label{display:block;font-size:.78rem;font-weight:600;margin:.7rem 0 .35rem;color
     <h3 id="mContaTitulo">Nova conta</h3>
     <label>Login (sem espaços)</label><input id="mLogin" autocapitalize="none">
     <label>Senha</label><input id="mSenha" placeholder="Deixe vazio para manter a atual">
-    <label>Clientes associados</label>
+    <label>Já adicionados nesta conta</label>
+    <div class="cli-pick sel-list" id="mSelecionados"></div>
+    <label style="margin-top:.8rem">Adicionar clientes</label>
     <input id="mBusca" placeholder="Buscar cliente…" style="margin-top:.3rem">
     <div class="cli-pick" id="mLista"></div>
     <div class="err" id="mErr"></div>
@@ -739,18 +744,33 @@ function abrirModalConta(login){
   el("ovConta").classList.remove("hide");
   el("mSalvar").onclick=()=>salvarConta(sel);
 }
+function badgeDe(b){const bd=document.createElement("span");
+  bd.className="badge-src "+(b.origem==="kv"?"kv":"np");
+  bd.textContent=b.origem==="kv"?"KV":"NP";return bd;}
 function renderPick(sel,q){
-  const qq=q.trim().toLowerCase();
   const lista=fonte?fonte.base.slice().sort((a,b)=>a.nome.localeCompare(b.nome)):[];
-  el("mLista").innerHTML="";
-  lista.filter(b=>!qq||b.nome.toLowerCase().includes(qq)).slice(0,400).forEach(b=>{
+  const map={};lista.forEach(b=>map[b.key]=b);
+  /* --- em cima: já adicionados, com botão de remover --- */
+  const selBox=el("mSelecionados");selBox.innerHTML="";
+  [...sel].forEach(k=>{
+    const b=map[k]||{key:k,nome:"(cliente não encontrado na base)",origem:"np"};
     const lb=document.createElement("label");
-    const ck=document.createElement("input");ck.type="checkbox";ck.checked=sel.has(b.key);
-    ck.onchange=()=>{ck.checked?sel.add(b.key):sel.delete(b.key);};
-    lb.appendChild(ck);
-    const bd=document.createElement("span");bd.className="badge-src "+(b.origem==="kv"?"kv":"np");
-    bd.textContent=b.origem==="kv"?"KV":"NP";lb.appendChild(bd);
+    lb.appendChild(badgeDe(b));
     lb.appendChild(document.createTextNode(b.nome));
+    const rm=document.createElement("button");rm.type="button";rm.className="rm";rm.textContent="✕ Remover";
+    rm.onclick=()=>{sel.delete(k);renderPick(sel,el("mBusca").value);};
+    lb.appendChild(rm);selBox.appendChild(lb);
+  });
+  if(!selBox.children.length)selBox.innerHTML='<p class="sub" style="padding:.4rem 0">Nenhum cliente adicionado ainda.</p>';
+  /* --- embaixo: disponíveis para adicionar --- */
+  const qq=q.trim().toLowerCase();
+  el("mLista").innerHTML="";
+  lista.filter(b=>!sel.has(b.key)).filter(b=>!qq||b.nome.toLowerCase().includes(qq)).slice(0,400).forEach(b=>{
+    const lb=document.createElement("label");lb.style.cursor="pointer";
+    const mais=document.createElement("span");mais.textContent="＋";mais.style.color="#4cc47e";mais.style.fontWeight="800";
+    lb.appendChild(mais);lb.appendChild(badgeDe(b));
+    lb.appendChild(document.createTextNode(b.nome));
+    lb.onclick=()=>{sel.add(b.key);renderPick(sel,el("mBusca").value);};
     el("mLista").appendChild(lb);
   });
   if(!el("mLista").children.length)el("mLista").innerHTML='<p class="sub" style="padding:.4rem 0">Nenhum cliente encontrado.</p>';
