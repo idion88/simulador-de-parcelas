@@ -1,819 +1,898 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulador de Parcelas</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --cor-fundo: #f0f2f5;
-            --cor-container: #ffffff;
-            --cor-texto: #1a1a2e;
-            --cor-texto-secundario: #555770;
-            --cor-texto-fino: #8a8ca5;
-            --cor-borda: #dde1e8;
-            --cor-destaque: #3b82f6;
-            --cor-aviso: #ef4444;
-            --cor-sombra: rgba(0,0,0,0.06);
-            --cor-linha: #f7f8fa;
-            --cor-linha-hover: #eef2ff;
-            --cor-input-bg: #ffffff;
-            --cor-botao-tema: #e8eaed;
-            --cor-botao-tema-hover: #d3d6db;
-            --cor-badge: #3b82f6;
-        }
-
-        .tema-escuro {
-            --cor-fundo: #0f0f17;
-            --cor-container: #1a1a28;
-            --cor-texto: #e8e8f0;
-            --cor-texto-secundario: #a0a0b8;
-            --cor-texto-fino: #6a6a82;
-            --cor-borda: #2e2e42;
-            --cor-destaque: #60a5fa;
-            --cor-aviso: #f87171;
-            --cor-sombra: rgba(0,0,0,0.3);
-            --cor-linha: #1e1e30;
-            --cor-linha-hover: #262644;
-            --cor-input-bg: #24243a;
-            --cor-botao-tema: #2a2a40;
-            --cor-botao-tema-hover: #3a3a55;
-            --cor-badge: #60a5fa;
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: 'DM Sans', sans-serif;
-            background-color: var(--cor-fundo);
-            padding: 16px;
-            padding-bottom: 100px;
-            min-height: 100vh;
-            transition: background-color 0.3s ease;
-        }
-
-        .container { max-width: 480px; margin: 0 auto; }
-
-        /* ===== HEADER ===== */
-        .header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 16px;
-            padding: 0 4px;
-        }
-
-        .header h1 {
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--cor-texto);
-            transition: color 0.3s ease;
-        }
-
-        .botao-tema {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background-color: var(--cor-botao-tema);
-            color: var(--cor-texto);
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-        }
-
-        .botao-tema:hover { background-color: var(--cor-botao-tema-hover); transform: scale(1.08); }
-        .botao-tema:focus-visible { outline: 2px solid var(--cor-destaque); outline-offset: 2px; }
-
-        /* ===== CARD INPUT ===== */
-        .card-input {
-            background: var(--cor-container);
-            border-radius: 14px;
-            padding: 20px;
-            margin-bottom: 16px;
-            box-shadow: 0 1px 6px var(--cor-sombra);
-            transition: background-color 0.3s ease;
-        }
-
-        .card-input label {
-            display: block;
-            font-weight: 500;
-            color: var(--cor-texto-secundario);
-            font-size: 13px;
-            margin-bottom: 8px;
-        }
-
-        .campo-valor { position: relative; }
-
-        .campo-valor .prefixo {
-            position: absolute;
-            left: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-weight: 700;
-            font-size: 16px;
-            color: var(--cor-texto-fino);
-            pointer-events: none;
-        }
-
-        .campo-valor input {
-            width: 100%;
-            padding: 14px 14px 14px 44px;
-            border: 2px solid var(--cor-borda);
-            border-radius: 10px;
-            font-size: 22px;
-            font-weight: 700;
-            font-family: inherit;
-            background-color: var(--cor-input-bg);
-            color: var(--cor-texto);
-            transition: border-color 0.2s ease, background-color 0.3s ease, color 0.3s ease;
-        }
-
-        .campo-valor input:focus { outline: none; border-color: var(--cor-destaque); }
-
-        .aviso {
-            margin-top: 10px;
-            text-align: center;
-            color: var(--cor-aviso);
-            font-size: 13px;
-            font-weight: 700;
-            display: none;
-        }
-        .aviso.visivel {
-            display: block;
-            animation: fadeSlide 0.25s ease forwards;
-        }
-
-        /* ===== DICA — MAIOR E VIBRANTE ===== */
-        .dica {
-            text-align: center;
-            font-size: 15px;
-            font-weight: 700;
-            color: var(--cor-destaque);
-            margin-bottom: 14px;
-            padding: 12px 16px;
-            background: var(--cor-container);
-            border-radius: 10px;
-            box-shadow: 0 1px 6px var(--cor-sombra);
-            border-left: 4px solid var(--cor-destaque);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-            animation: dicaPulse 3s ease-in-out infinite;
-        }
-
-        .dica .emoji-dica {
-            font-size: 22px;
-            flex-shrink: 0;
-            animation: apontar 1.5s ease-in-out infinite;
-        }
-
-        .tema-escuro .dica {
-            background: var(--cor-container);
-            border-left-color: var(--cor-destaque);
-            color: var(--cor-destaque);
-        }
-
-        @keyframes dicaPulse {
-            0%, 100% { box-shadow: 0 1px 6px var(--cor-sombra); }
-            50%      { box-shadow: 0 2px 16px rgba(59, 130, 246, 0.15); }
-        }
-
-        .tema-escuro @keyframes dicaPulse {
-            0%, 100% { box-shadow: 0 1px 6px var(--cor-sombra); }
-            50%      { box-shadow: 0 2px 16px rgba(96, 165, 250, 0.15); }
-        }
-
-        @keyframes apontar {
-            0%, 100% { transform: translateY(0); }
-            25%      { transform: translateY(-4px) rotate(-5deg); }
-            50%      { transform: translateY(0); }
-            75%      { transform: translateY(-2px) rotate(3deg); }
-        }
-
-        /* ===== CARD PARCELAS ===== */
-        .card-parcelas {
-            background: var(--cor-container);
-            border-radius: 14px;
-            overflow: hidden;
-            box-shadow: 0 1px 6px var(--cor-sombra);
-            transition: background-color 0.3s ease;
-        }
-
-        .titulo-parcelas {
-            padding: 14px 20px;
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--cor-texto-fino);
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            border-bottom: 1px solid var(--cor-borda);
-        }
-
-        .lista-parcelas { list-style: none; }
-
-        /* ===== LINHA NORMAL ===== */
-        .linha-parcela {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 14px 16px 14px 20px;
-            border-bottom: 1px solid var(--cor-borda);
-            border-left: 4px solid transparent;
-            transition: all 0.25s ease;
-            cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
-            user-select: none;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .linha-parcela:last-child { border-bottom: none; }
-        .linha-parcela:nth-child(odd) { background-color: var(--cor-linha); }
-        .linha-parcela:hover { background-color: var(--cor-linha-hover); }
-
-        /* ===== LINHA SELECIONADA ===== */
-        .linha-parcela.selecionada {
-            background: linear-gradient(135deg, #065f46 0%, #059669 40%, #10b981 100%) !important;
-            border-left-color: #34d399;
-            animation: glowPulse 2s ease-in-out infinite;
-        }
-
-        .tema-escuro .linha-parcela.selecionada {
-            background: linear-gradient(135deg, #064e3b 0%, #047857 40%, #10b981 100%) !important;
-            animation: glowPulseDark 2s ease-in-out infinite;
-        }
-
-        @keyframes glowPulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0), 0 2px 8px rgba(5,150,105,0.3); }
-            50%      { box-shadow: 0 0 0 4px rgba(16,185,129,0.12), 0 4px 16px rgba(5,150,105,0.4); }
-        }
-
-        @keyframes glowPulseDark {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0), 0 0 16px rgba(16,185,129,0.15); }
-            50%      { box-shadow: 0 0 0 4px rgba(16,185,129,0.15), 0 0 30px rgba(16,185,129,0.25); }
-        }
-
-        .linha-parcela.selecionada::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 60%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
-            animation: shineSweep 2.5s ease-in-out infinite;
-            pointer-events: none;
-        }
-
-        @keyframes shineSweep {
-            0%   { left: -100%; }
-            50%  { left: 150%; }
-            100% { left: 150%; }
-        }
-
-        .linha-parcela.selecionada .label-parcela,
-        .linha-parcela.selecionada .valor-total-linha {
-            color: rgba(255,255,255,0.8) !important;
-        }
-
-        .linha-parcela.selecionada .valor-parcela {
-            color: #ffffff !important;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.15);
-        }
-
-        /* ===== LADO ESQUERDO ===== */
-        .lado-esquerdo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 36px;
-            height: 28px;
-            padding: 0 8px;
-            border-radius: 8px;
-            background-color: var(--cor-badge);
-            color: #ffffff;
-            font-size: 12px;
-            font-weight: 700;
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        .linha-parcela.selecionada .badge {
-            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-            color: #1a1a2e;
-            transform: scale(1.12);
-            box-shadow: 0 2px 10px rgba(245, 158, 11, 0.5);
-            animation: badgePop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        @keyframes badgePop {
-            0%   { transform: scale(1); }
-            50%  { transform: scale(1.3); }
-            100% { transform: scale(1.12); }
-        }
-
-        .label-parcela {
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--cor-texto-secundario);
-            transition: color 0.3s ease;
-        }
-
-        /* ===== LADO DIREITO ===== */
-        .lado-direito {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            text-align: right;
-        }
-
-        .valores { display: flex; flex-direction: column; }
-
-        .valor-parcela {
-            font-size: 16px;
-            font-weight: 700;
-            color: var(--cor-texto);
-            transition: color 0.3s ease;
-        }
-
-        .valor-total-linha {
-            font-size: 11px;
-            color: var(--cor-texto-fino);
-            margin-top: 1px;
-            transition: color 0.3s ease;
-        }
-
-        /* ===== CHECK ===== */
-        .check-indicator {
-            width: 26px;
-            height: 26px;
-            border-radius: 50%;
-            border: 2.5px solid var(--cor-borda);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            background: transparent;
-        }
-
-        .check-indicator svg {
-            opacity: 0;
-            transform: scale(0) rotate(-45deg);
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        .linha-parcela.selecionada .check-indicator {
-            border-color: #ffffff;
-            background: linear-gradient(135deg, #fbbf24, #f59e0b);
-            transform: scale(1.1);
-            box-shadow: 0 0 12px rgba(245, 158, 11, 0.5);
-        }
-
-        .linha-parcela.selecionada .check-indicator svg {
-            opacity: 1;
-            transform: scale(1) rotate(0deg);
-        }
-
-        /* ===== EMPTY STATE ===== */
-        .estado-vazio {
-            padding: 40px 20px;
-            text-align: center;
-            color: var(--cor-texto-fino);
-            font-size: 14px;
-        }
-        .estado-vazio .icone-vazio { font-size: 32px; margin-bottom: 8px; display: block; }
-
-        /* ===== BARRA WHATSAPP ===== */
-        .barra-whatsapp {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            z-index: 100;
-            padding: 0 10px;
-            padding-bottom: max(10px, env(safe-area-inset-bottom));
-            transform: translateY(120%);
-            transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
-            pointer-events: none;
-        }
-
-        .barra-whatsapp.visivel {
-            transform: translateY(0);
-            pointer-events: auto;
-        }
-
-        .barra-whatsapp-inner {
-            max-width: 480px;
-            margin: 0 auto;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 8px 32px rgba(37, 211, 102, 0.3), 0 4px 12px rgba(0,0,0,0.15);
-        }
-
-        .barra-conteudo {
-            background: linear-gradient(135deg, #075e54 0%, #128c7e 30%, #25d366 70%, #5efc82 100%);
-            background-size: 200% 200%;
-            animation: gradientShift 3s ease-in-out infinite;
-            padding: 14px 18px;
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
-            transition: opacity 0.2s ease;
-        }
-
-        .barra-conteudo:active { opacity: 0.9; }
-
-        @keyframes gradientShift {
-            0%, 100% { background-position: 0% 50%; }
-            50%      { background-position: 100% 50%; }
-        }
-
-        .barra-icone {
-            width: 44px;
-            height: 44px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            animation: iconFloat 2s ease-in-out infinite;
-        }
-
-        @keyframes iconFloat {
-            0%, 100% { transform: translateY(0); }
-            50%      { transform: translateY(-2px); }
-        }
-
-        .barra-texto { flex: 1; min-width: 0; }
-
-        .barra-texto-principal {
-            color: #ffffff;
-            font-size: 14px;
-            font-weight: 700;
-            line-height: 1.3;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
-        }
-
-        .barra-texto-secundario {
-            color: rgba(255,255,255,0.85);
-            font-size: 12px;
-            font-weight: 400;
-            margin-top: 2px;
-        }
-
-        .barra-seta {
-            color: rgba(255,255,255,0.8);
-            font-size: 22px;
-            flex-shrink: 0;
-            animation: pulseArrow 1.5s ease-in-out infinite;
-        }
-
-        @keyframes pulseArrow {
-            0%, 100% { transform: translateX(0); opacity: 0.7; }
-            50%      { transform: translateX(5px); opacity: 1; }
-        }
-
-        .botao-fechar-barra {
-            background: rgba(255,255,255,0.15);
-            border: none;
-            color: white;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            font-size: 14px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            transition: background 0.2s ease;
-        }
-
-        .botao-fechar-barra:hover { background: rgba(255,255,255,0.3); }
-
-        /* ===== ANIMAÇÕES ===== */
-        @keyframes fadeSlide {
-            from { opacity: 0; transform: translateY(-6px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes popIn {
-            from { opacity: 0; transform: scale(0.95) translateY(6px); }
-            to   { opacity: 1; transform: scale(1) translateY(0); }
-        }
-
-        .linha-parcela { animation: popIn 0.25s ease backwards; }
-        .linha-parcela:nth-child(1)  { animation-delay: 0.00s; }
-        .linha-parcela:nth-child(2)  { animation-delay: 0.03s; }
-        .linha-parcela:nth-child(3)  { animation-delay: 0.06s; }
-        .linha-parcela:nth-child(4)  { animation-delay: 0.09s; }
-        .linha-parcela:nth-child(5)  { animation-delay: 0.12s; }
-        .linha-parcela:nth-child(6)  { animation-delay: 0.15s; }
-        .linha-parcela:nth-child(7)  { animation-delay: 0.18s; }
-        .linha-parcela:nth-child(8)  { animation-delay: 0.21s; }
-        .linha-parcela:nth-child(9)  { animation-delay: 0.24s; }
-        .linha-parcela:nth-child(10) { animation-delay: 0.27s; }
-        .linha-parcela:nth-child(11) { animation-delay: 0.30s; }
-        .linha-parcela:nth-child(12) { animation-delay: 0.33s; }
-        .linha-parcela:nth-child(13) { animation-delay: 0.36s; }
-        .linha-parcela:nth-child(14) { animation-delay: 0.39s; }
-        .linha-parcela:nth-child(15) { animation-delay: 0.42s; }
-        .linha-parcela:nth-child(16) { animation-delay: 0.45s; }
-        .linha-parcela:nth-child(17) { animation-delay: 0.48s; }
-        .linha-parcela:nth-child(18) { animation-delay: 0.51s; }
-        .linha-parcela:nth-child(19) { animation-delay: 0.54s; }
-        .linha-parcela:nth-child(20) { animation-delay: 0.57s; }
-        .linha-parcela:nth-child(21) { animation-delay: 0.60s; }
-
-        /* ===== RODAPÉ ===== */
-        .rodape {
-            margin-top: 16px;
-            text-align: center;
-            font-size: 11px;
-            color: var(--cor-texto-fino);
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nordeste Prime · Portal do Cliente</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --ink:#e7eef6;--ink-soft:#93a7bd;--line:#26323f;--line-soft:#1d2731;
+  --paper:#141d27;--bg:#0c131b;--brand:#3b9be0;--brand-dk:#7cc1f0;
+  --debt:#f0697d;--paid:#4cc47e;--pending:#e0a44a;--chip:#1c2a38;
+  --surface-2:#1a242f;--input-bg:#0f1620;--modal-bg:#1a242f;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 12px 32px -16px rgba(0,0,0,.6);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:"Inter","Segoe UI",Roboto,system-ui,sans-serif;
+  padding:clamp(.8rem,3vw,2rem) clamp(.6rem,3vw,1.5rem) 4rem;-webkit-font-smoothing:antialiased}
+.shell{max-width:860px;margin:0 auto;background:var(--paper);border-radius:20px;box-shadow:var(--shadow);overflow:hidden;min-height:60vh}
+header{padding:1.2rem 1.4rem 1rem;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;justify-content:space-between}
+h1{font-size:1.25rem;font-weight:700;letter-spacing:-.02em;display:flex;align-items:center;gap:.5rem}
+.logo{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,#3b9be0,#155e9c);display:grid;place-items:center;color:#fff;font-size:.85rem;font-weight:700}
+.sub{color:var(--ink-soft);font-size:.8rem;margin-top:.2rem}
+main{padding:1.2rem 1.4rem 2rem}
+.hide{display:none!important}
+input,select{width:100%;border:1px solid var(--line);background:var(--input-bg);color:var(--ink);border-radius:11px;padding:.75rem .9rem;font-size:.95rem}
+input:focus,select:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(59,155,224,.18)}
+label{display:block;font-size:.78rem;font-weight:600;margin:.7rem 0 .35rem;color:var(--ink-soft)}
+.btn{border:none;background:var(--brand);color:#fff;padding:.8rem 1.2rem;border-radius:11px;font-size:.95rem;font-weight:600;cursor:pointer;width:100%}
+.btn:hover{filter:brightness(1.1)}
+.btn-sm{width:auto;padding:.5rem .9rem;font-size:.82rem;border-radius:9px}
+.btn-ghost{background:transparent;border:1px solid var(--line);color:var(--ink-soft)}
+.btn-danger{background:transparent;border:1px solid var(--debt);color:var(--debt)}
+.btn-green{background:var(--paid)}
+.err{color:var(--debt);font-size:.82rem;margin-top:.55rem;min-height:1rem;font-weight:600}
+.ok-msg{color:var(--paid);font-size:.82rem;margin-top:.55rem;min-height:1rem;font-weight:600}
+.login-card{max-width:380px;margin:2.5rem auto;text-align:center}
+.login-card .logo-lg{width:56px;height:56px;border-radius:15px;margin:0 auto 1rem;background:linear-gradient(135deg,#3b9be0,#155e9c);display:grid;place-items:center;color:#fff;font-size:1.3rem;font-weight:700}
+.login-card h2{font-size:1.25rem;margin-bottom:.25rem}
+.login-card p{color:var(--ink-soft);font-size:.85rem;margin-bottom:1.2rem}
+.login-card input{margin-bottom:.7rem;text-align:center}
+.tabs{display:flex;gap:.4rem;margin-bottom:1.1rem;flex-wrap:wrap}
+.tabs button{background:var(--chip);border:1px solid var(--line);color:var(--ink-soft);padding:.5rem 1rem;border-radius:999px;font-size:.85rem;font-weight:600;cursor:pointer}
+.tabs button.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.card{background:var(--surface-2);border:1px solid var(--line);border-radius:14px;padding:1rem 1.1rem;margin-bottom:.9rem}
+.card h3{font-size:.95rem;margin-bottom:.6rem}
+.acc-row{display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:.7rem 0;border-bottom:1px solid var(--line-soft);flex-wrap:wrap}
+.acc-row:last-child{border-bottom:none}
+.acc-row .nm{font-weight:600;font-size:.92rem}
+.acc-row .meta{font-size:.76rem;color:var(--ink-soft);margin-top:.15rem}
+#cliChips button{display:inline-flex;flex-direction:column;align-items:stretch;gap:.28rem}
+.chip-bar{display:block;height:4px;border-radius:99px;background:rgba(255,255,255,.16);overflow:hidden}
+.chip-bar>i{display:block;height:100%;border-radius:99px;background:#4cc47e}
+.chip-bar.late>i{background:#f0697d}
+.pbar{height:10px;border-radius:99px;background:rgba(255,255,255,.13);border:1px solid var(--line);overflow:hidden;margin:.5rem 0 .8rem}
+.pbar>i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#2fb56b,#4cc47e);transition:width .4s}
+.pbar.late>i{background:linear-gradient(90deg,#d64560,#f0697d)}
+.pbar-lb{display:flex;justify-content:space-between;font-size:.74rem;color:var(--ink-soft);margin:-.5rem 0 .8rem}
+.pbar-lb b{color:var(--ink)}
+.kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.7rem;margin-bottom:1rem}
+.kpi{background:var(--surface-2);border:1px solid var(--line);border-radius:13px;padding:.8rem .9rem}
+.kpi .lb{font-size:.72rem;color:var(--ink-soft);font-weight:600}
+.kpi .vl{font-size:1.25rem;font-weight:700;margin-top:.2rem}
+.parc{display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:.75rem 0;border-bottom:1px solid var(--line-soft);flex-wrap:wrap}
+.parc:last-child{border-bottom:none}
+.parc .pn{font-size:.9rem;font-weight:600}
+.parc .pd{font-size:.76rem;color:var(--ink-soft);margin-top:.15rem}
+.tag{font-size:.72rem;font-weight:700;padding:.28rem .7rem;border-radius:999px}
+.tag.paga{background:rgba(76,196,126,.15);color:var(--paid)}
+.tag.aberta{background:rgba(59,155,224,.15);color:var(--brand-dk)}
+.tag.parcial{background:rgba(224,164,74,.16);color:var(--pending)}
+.tag.vencida{background:rgba(240,105,125,.16);color:var(--debt)}
+.chips{display:flex;gap:.45rem;flex-wrap:wrap;margin-bottom:1rem}
+.chips button{background:var(--chip);border:1px solid var(--line);color:var(--ink);padding:.45rem .9rem;border-radius:999px;font-size:.82rem;cursor:pointer}
+.chips button.on{border-color:var(--brand);color:var(--brand-dk);font-weight:700}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:1rem;z-index:50}
+.modal{background:var(--modal-bg);border:1px solid var(--line);border-radius:16px;padding:1.3rem;width:100%;max-width:440px;max-height:88vh;overflow:auto}
+.modal h3{font-size:1.05rem;margin-bottom:.8rem}
+.cli-pick{max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:11px;padding:.4rem .7rem;margin-top:.4rem}
+.cli-pick label{display:flex;align-items:center;gap:.55rem;font-size:.85rem;font-weight:500;color:var(--ink);margin:.15rem 0;padding:.35rem 0;border-bottom:1px solid var(--line-soft);cursor:pointer}
+.cli-pick label:last-child{border-bottom:none}
+.cli-pick input[type=checkbox]{width:auto}
+.badge-src{font-size:.62rem;font-weight:800;border-radius:6px;padding:.1rem .35rem;letter-spacing:.03em}
+.badge-src.np{background:rgba(59,155,224,.18);color:#6db9ef}
+.badge-src.kv{background:rgba(76,196,126,.18);color:#4cc47e}
+.pay-opt{border:1px solid var(--line);border-radius:13px;padding:.9rem;margin-bottom:.8rem;cursor:default}
+.pay-opt.pix{border-color:var(--brand)}
+.pay-opt h4{font-size:.92rem;margin-bottom:.3rem}
+.pay-opt p{font-size:.8rem;color:var(--ink-soft);line-height:1.5}
+.pixkey{display:flex;gap:.5rem;align-items:center;margin:.5rem 0}
+.pixkey code{background:var(--input-bg);border:1px solid var(--line);border-radius:9px;padding:.5rem .8rem;font-size:.9rem;flex:1;color:var(--brand-dk)}
+.footer-note{text-align:center;color:var(--ink-soft);font-size:.72rem;margin-top:1.4rem}
+.topbtns{display:flex;gap:.5rem;flex-wrap:wrap}
+.sync-badge{font-size:.72rem;color:var(--ink-soft)}
+</style>
 </head>
 <body>
-    <div class="container">
-        <header class="header">
-            <h1>Simulador de Parcelas</h1>
-            <button class="botao-tema" id="alternarTema" aria-label="Alternar tema" title="Alternar tema">🌙</button>
-        </header>
+<div class="shell">
+  <header>
+    <div>
+      <h1><span class="logo">NP</span> Nordeste Prime</h1>
+      <div class="sub" id="subtitle">Portal do cliente</div>
+    </div>
+    <div class="topbtns hide" id="topBtns">
+      <button class="btn btn-sm btn-ghost" id="btnRefresh">Atualizar</button>
+      <button class="btn btn-sm btn-ghost" id="btnSair">Sair</button>
+    </div>
+  </header>
+  <main>
 
-        <div class="card-input">
-            <label for="valor">Valor desejado (mínimo R$ 50,00)</label>
-            <div class="campo-valor">
-                <span class="prefixo" aria-hidden="true">R$</span>
-                <input type="number" id="valor" value="500" min="50" step="0.01" inputmode="decimal" aria-describedby="aviso">
-            </div>
-            <div class="aviso" id="aviso" role="alert" aria-live="assertive"></div>
-        </div>
-
-        <div class="dica">
-            <span class="emoji-dica">👆</span>
-            <span>Toque em uma opção e compartilhe no WhatsApp</span>
-        </div>
-
-        <div class="card-parcelas" role="region" aria-label="Tabela de parcelas">
-            <div class="titulo-parcelas">Parcelas disponíveis</div>
-            <ul class="lista-parcelas" id="listaParcelas" aria-live="polite"></ul>
-        </div>
-
-        <p class="rodape">Valores com taxas e arredondamento inclusos.</p>
+    <!-- LOGIN -->
+    <div id="viewLogin" class="login-card">
+      <div class="logo-lg">NP</div>
+      <h2>Bem-vindo</h2>
+      <p>Entre com o login e senha fornecidos pela loja.</p>
+      <input id="inLogin" placeholder="Login" autocomplete="username">
+      <input id="inSenha" placeholder="Senha" type="password" autocomplete="current-password">
+      <button class="btn" id="btnEntrar">Entrar</button>
+      <div class="err" id="loginErr"></div>
     </div>
 
-    <!-- BARRA WHATSAPP -->
-    <div class="barra-whatsapp" id="barraWhatsapp" aria-live="polite">
-        <div class="barra-whatsapp-inner">
-            <div class="barra-conteudo" id="barraConteudo">
-                <div class="barra-icone">
-                    <svg viewBox="0 0 24 24" width="24" height="24" fill="white">
-                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                    </svg>
-                </div>
-                <div class="barra-texto">
-                    <div class="barra-texto-principal" id="barraTitulo">Compartilhar no WhatsApp</div>
-                    <div class="barra-texto-secundario" id="barraSubtitulo">Toque para enviar</div>
-                </div>
-                <span class="barra-seta">›</span>
-                <button class="botao-fechar-barra" id="fecharBarra" aria-label="Fechar">✕</button>
-            </div>
+    <!-- ADMIN -->
+    <div id="viewAdmin" class="hide">
+      <div class="tabs">
+        <button data-tab="contas" class="on">Contas</button>
+        <button data-tab="config">Configurações</button>
+      </div>
+      <div class="sync-badge" id="syncBadge" style="margin-bottom:.8rem"></div>
+
+      <div id="tabContas">
+        <div style="display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap">
+          <button class="btn btn-sm" id="btnNovaConta">+ Nova conta</button>
+          <button class="btn btn-sm btn-ghost" id="btnSync">Sincronizar agora</button>
         </div>
+        <div class="card">
+          <h3>Contas de clientes</h3>
+          <div id="listaContas"><p class="sub">Carregando…</p></div>
+        </div>
+      </div>
+
+      <div id="tabConfig" class="hide">
+        <div class="card">
+          <h3>Alterar senha do administrador</h3>
+          <label>Senha atual</label><input id="cfgSenhaAtual" type="password">
+          <label>Nova senha</label><input id="cfgSenhaNova" type="password">
+          <label>Confirmar nova senha</label><input id="cfgSenhaConf" type="password">
+          <div style="margin-top:.9rem"><button class="btn btn-sm" id="btnSalvarSenha">Salvar nova senha</button></div>
+          <div class="err" id="cfgSenhaErr"></div><div class="ok-msg" id="cfgSenhaOk"></div>
+        </div>
+        <div class="card">
+          <h3>Pagamento</h3>
+          <label>WhatsApp para comprovantes (só números, com 55)</label><input id="cfgZap">
+          <div style="margin-top:.9rem"><button class="btn btn-sm" id="btnSalvarPag">Salvar</button></div>
+          <div class="ok-msg" id="cfgPagOk"></div>
+        </div>
+      </div>
     </div>
 
-    <script>
-        // ============================================================
-        // TEMA
-        // ============================================================
-        const botaoAlternarTema = document.getElementById('alternarTema');
+    <!-- CLIENTE -->
+    <div id="viewCliente" class="hide">
+      <p style="font-size:1.05rem;font-weight:700;margin-bottom:.2rem" id="cliOla"></p>
+      <p class="sub" id="cliAtualizado" style="margin-bottom:1rem"></p>
+      <div class="chips hide" id="cliChips"></div>
+      <div class="kpis">
+        <div class="kpi"><div class="lb">Restante a pagar</div><div class="vl" id="kSaldo">—</div></div>
+        <div class="kpi"><div class="lb">Próxima parcela</div><div class="vl" id="kProx">—</div></div>
+      </div>
+      <div class="card">
+        <h3 id="cliTituloParcelas">Parcelas</h3>
+        <div class="pbar" id="cliBarra"><i style="width:0%"></i></div>
+        <div class="pbar-lb" id="cliBarraLb"></div>
+        <div id="cliParcelas"></div>
+      </div>
+      <div class="footer-note">Dúvidas? Fale com a gente no WhatsApp.</div>
+    </div>
 
-        if (localStorage.getItem('temaSimuladorParcelas') === 'escuro') {
-            document.body.classList.add('tema-escuro');
-            botaoAlternarTema.textContent = '☀️';
-        }
+  </main>
+</div>
 
-        botaoAlternarTema.addEventListener('click', () => {
-            document.body.classList.toggle('tema-escuro');
-            const escuro = document.body.classList.contains('tema-escuro');
-            localStorage.setItem('temaSimuladorParcelas', escuro ? 'escuro' : 'claro');
-            botaoAlternarTema.textContent = escuro ? '☀️' : '🌙';
-        });
+<!-- MODAL NOVA CONTA / EDITAR -->
+<div class="overlay hide" id="ovConta">
+  <div class="modal">
+    <h3 id="mContaTitulo">Nova conta</h3>
+    <label>Login (sem espaços)</label><input id="mLogin" autocapitalize="none">
+    <label>Senha</label><input id="mSenha" placeholder="Deixe vazio para manter a atual">
+    <label>Clientes associados</label>
+    <input id="mBusca" placeholder="Buscar cliente…" style="margin-top:.3rem">
+    <div class="cli-pick" id="mLista"></div>
+    <div class="err" id="mErr"></div>
+    <div style="display:flex;gap:.5rem;margin-top:1rem">
+      <button class="btn btn-sm" id="mSalvar">Salvar</button>
+      <button class="btn btn-sm btn-ghost" id="mCancelar">Cancelar</button>
+    </div>
+  </div>
+</div>
 
-        // ============================================================
-        // TAXAS
-        // ============================================================
-        const taxasPrimeiro = {
-            1: 1.100, 2: 1.110, 3: 1.118, 4: 1.118, 5: 1.125,
-            6: 1.125, 7: 1.127, 8: 1.127, 9: 1.127, 10: 1.128,
-            11: 1.137, 12: 1.137, 13: 1.170, 14: 1.170, 15: 1.170,
-            16: 1.200, 17: 1.200, 18: 1.200, 19: 1.240, 20: 1.240, 21: 1.240
-        };
+<!-- MODAL PAGAMENTO -->
+<div class="overlay hide" id="ovPagar">
+  <div class="modal">
+    <h3 id="pgTitulo">Pagar parcela</h3>
+    <div class="pay-opt pix">
+      <h4>Entre em contato para realizar o pagamento</h4>
+      <p>Fale com a loja pelo WhatsApp para combinar a forma de pagamento. Assim que o pagamento for registrado, a parcela aparece aqui como paga.</p>
+      <button class="btn btn-sm btn-green" id="pgZap" style="width:100%">Chamar no WhatsApp</button>
+    </div>
+    <button class="btn btn-sm btn-ghost" id="pgFechar" style="margin-top:.3rem">Fechar</button>
+  </div>
+</div>
 
-        const taxasSegundo = {
-            1: 1.15,  2: 1.20,  3: 1.25,  4: 1.30,  5: 1.35,
-            6: 1.40,  7: 1.45,  8: 1.50,  9: 1.55, 10: 1.60,
-            11: 1.65, 12: 1.70, 13: 1.75, 14: 1.85, 15: 1.90,
-            16: 1.95, 17: 2.00, 18: 2.05, 19: 2.10, 20: 2.15,
-            21: 2.20
-        };
+<script>
+/* =========================================================
+   CONFIGURAÇÃO
+   A senha do admin fica salva NA NUVEM (linha __config).
+   O valor abaixo é só o padrão inicial, usado enquanto
+   a nuvem não tiver uma senha salva.
+========================================================= */
+const CONFIG = {
+  // Nuvem NOVA: onde ficam as contas dos clientes do portal (portal_gerente)
+  SUPABASE_URL: "https://wvciriebplkdpremwowv.supabase.co",
+  SUPABASE_KEY: "sb_publishable_Sg0J18RcUrkrNnjCm1oThA_2Agc88GQ",
+  // Nuvem ANTIGA: onde o app Gerente (APK) continua gravando a base
+  FONTE_URL: "https://fmotuofuuzsccnqsrboz.supabase.co",
+  FONTE_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZtb3R1b2Z1dXpzY2NucXNyYm96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE5MTQ4MzAsImV4cCI6MjA5NzQ5MDgzMH0.WfekwvnUw2C09-xLWuwVxuVXGYtLeiAJA9NJoctaTGQ",
+  TABLE_FONTE: "crediado",
+  ROW_ID: 1,
+  TABLE_PORTAL: "portal_gerente",
+  ADMIN_LOGIN: "admin",
+  SENHA_ADMIN_PADRAO: "@131188@",
+  PIX_PADRAO: "81989552704",
+  ZAP_PADRAO: "5581982423329"
+};
 
-        // ============================================================
-        // ARREDONDAMENTO
-        // ============================================================
-        function arredondarRegraNova(valor) {
-            const v = Math.round(valor * 100) / 100;
-            let resto = Math.round((v % 10) * 100) / 100;
-            if (resto >= 0.01 && resto <= 5.00) return Math.round((v - resto + 5.00) * 100) / 100;
-            if (resto > 5.00 && resto <= 9.99)  return Math.round((v - resto + 10.00) * 100) / 100;
-            return v;
-        }
+const RAW = [
 
-        function formatar(valor) {
-            return valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Branco caixa de som","","- R$ 1.855,00","R$ 795,00","R$ 2.650,00","","19/11/2025","https://app.crediado.com/app.html#/i/?cuid=00176c72-8542-48ab-9b2f-ca4a797d74de&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Eliane tv 43 amiga","","- R$ 2.120,00","R$ 530,00","R$ 2.650,00","","31/03/2026","https://app.crediado.com/app.html#/i/?cuid=3cd53df8-1fd2-4f7a-8d1e-fcd931f7a5ad&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Welington chapinha","","- R$ 136,00","R$ 204,00","R$ 340,00","","09/04/2026","https://app.crediado.com/app.html#/i/?cuid=3d603e09-5b98-49c8-98ef-2db20132e103&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Jeova emprestimo","","- R$ 2.665,00","R$ 0,00","R$ 2.665,00","","10/06/2026","https://app.crediado.com/app.html#/i/?cuid=3db78a3c-8cbf-43ea-bdfb-cb44bbe27d10&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Andre Renegociação","","- R$ 1.200,00","R$ 0,00","R$ 1.200,00","","18/06/2026","https://app.crediado.com/app.html#/i/?cuid=3fa89d88-2227-4667-ad4e-fd1ef84246d3&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Edson Fazenda velha","","- R$ 8.000,00","R$ 1.500,00","R$ 9.500,00","","15/05/2026","https://app.crediado.com/app.html#/i/?cuid=3fae0254-b30c-44c9-a172-580e52a55fa9&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Mateus empréstimo 5k 2°","","- R$ 7.080,00","R$ 1.770,00","R$ 8.850,00","","10/04/2026","https://app.crediado.com/app.html#/i/?cuid=41d81bae-572c-4d6a-826b-716b07b41fde&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Nena Mãe de Fernanda","","- R$ 880,00","R$ 220,00","R$ 1.100,00","","10/05/2026","https://app.crediado.com/app.html#/i/?cuid=4334161a-8bbc-4f3d-878b-8f34ccd8f7d3&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Aninha (TV 32)","","- R$ 300,00","R$ 1.500,00","R$ 1.800,00","","05/04/2025","https://app.crediado.com/app.html#/i/?cuid=437b2234-dfd5-440c-9e8b-c5c4340c9df6&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Marta 350","","- R$ 445,00","R$ 0,00","R$ 445,00","","25/06/2026","https://app.crediado.com/app.html#/i/?cuid=44b8f8dd-258a-4a48-a0bf-2df84ffd8a04&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Jessica erica emprestimo","","- R$ 2.460,00","R$ 2.460,00","R$ 4.920,00","","24/02/2026","https://app.crediado.com/app.html#/i/?cuid=457a976e-27de-41e1-b5cf-49db4c046202&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Erica ( Bombox 3)","","- R$ 1.576,00","R$ 1.884,00","R$ 3.460,00","","04/10/2025","https://app.crediado.com/app.html#/i/?cuid=45a2672b-a374-45fa-b517-fdf33e429cc8&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Erica compras","","- R$ 950,00","R$ 475,00","R$ 1.425,00","","18/06/2026","https://app.crediado.com/app.html#/i/?cuid=45a2e48d-68c9-41a3-a913-af314d629462&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Elinaldo beta Realme c85","","- R$ 1.044,00","R$ 696,00","R$ 1.740,00","","10/02/2026","https://app.crediado.com/app.html#/i/?cuid=4600bbc1-6dcb-40d7-af0a-969b2f21e2b7&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Joyce Tiago telefone filha","","- R$ 330,00","R$ 770,00","R$ 1.100,00","","30/11/2025","https://app.crediado.com/app.html#/i/?cuid=48a6fc1b-871b-4d4c-81d9-2b90b7fd1fde&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Kelei 1k 3°","","- R$ 1.505,00","R$ 215,00","R$ 1.720,00","","23/06/2026","https://app.crediado.com/app.html#/i/?cuid=4af2ccce-019e-42c8-8c88-f24ed5eba81c&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Jesse Projetor","","- R$ 270,00","R$ 135,00","R$ 405,00","","30/05/2026","https://app.crediado.com/app.html#/i/?cuid=4c2bf37a-be09-4bcb-8c1d-567581269ecc&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Marlene feira","","- R$ 120,00","R$ 240,00","R$ 360,00","","26/03/2026","https://app.crediado.com/app.html#/i/?cuid=4d893661-e73e-4c43-a8e3-d7495f2370f1&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Beatriz 2k kauan","","- R$ 2.800,00","R$ 700,00","R$ 3.500,00","","24/04/2026","https://app.crediado.com/app.html#/i/?cuid=4df65960-eaa6-4080-8d0b-2230d3c3e3fc&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Rute Telefone","","- R$ 1.350,00","R$ 0,00","R$ 1.350,00","","22/05/2026","https://app.crediado.com/app.html#/i/?cuid=4ed91958-2ed5-41ab-96d0-57f8bf8ef9b5&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Dudu empréstimo 3,5k","","- R$ 5.500,00","R$ 1.100,00","R$ 6.600,00","","24/04/2026","https://app.crediado.com/app.html#/i/?cuid=4f535877-4db7-4861-a8b7-5b47ac67a681&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Paulinha Df Amigo","","- R$ 1.360,00","R$ 340,00","R$ 1.700,00","","03/05/2026","https://app.crediado.com/app.html#/i/?cuid=508cfb7c-a1e1-4566-b412-c3f77438fe6d&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Rubevania empréstimo ( 1k )","","- R$ 1.310,00","R$ 1.310,00","R$ 2.620,00","","16/01/2026","https://app.crediado.com/app.html#/i/?cuid=5229e700-abb7-4501-a6f3-4a00befdda9d&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Rosa emprestimo 3k","","- R$ 2.625,00","R$ 2.625,00","R$ 5.250,00","","28/01/2026","https://app.crediado.com/app.html#/i/?cuid=53137966-2e58-4106-a672-bdbb1de5f86a&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Daniela empr. 360","","- R$ 3.240,00","R$ 1.080,00","R$ 4.320,00","","26/03/2026","https://app.crediado.com/app.html#/i/?cuid=58750efa-49f7-4e69-8546-c85b2972b0de&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Linda Inês independente xiaomi","","- R$ 1.365,00","R$ 585,00","R$ 1.950,00","","20/03/2026","https://app.crediado.com/app.html#/i/?cuid=58941a32-9975-4dad-a160-eb4e1bbb4bb9&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Matheus Nega empréstimo 1 k","","- R$ 1.239,00","R$ 531,00","R$ 1.770,00","","13/02/2026","https://app.crediado.com/app.html#/i/?cuid=5895911b-fa63-4c3a-a223-371b79d3ca1b&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Genilda ind xiaomi","","- R$ 1.160,00","R$ 490,00","R$ 1.650,00","","26/02/2026","https://app.crediado.com/app.html#/i/?cuid=58c53d15-2688-4a4e-b431-9e72c0c39056&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Marciano emprestimo","","- R$ 2.448,00","R$ 3.672,00","R$ 6.120,00","","16/01/2026","https://app.crediado.com/app.html#/i/?cuid=58e184e0-742a-4814-9478-3dc230456612&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Pedro 800","","- R$ 1.180,00","R$ 0,00","R$ 1.180,00","","20/06/2026","https://app.crediado.com/app.html#/i/?cuid=5a6faeee-36ad-4faf-b4ea-724738dd0dda&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Luiz brisa telefone","","- R$ 510,00","R$ 1.190,00","R$ 1.700,00","","15/11/2025","https://app.crediado.com/app.html#/i/?cuid=5afb0569-0b16-4c6e-b8aa-3e1a8c2f269c&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","alane emprestimo","","- R$ 146,00","R$ 584,00","R$ 730,00","","15/03/2026","https://app.crediado.com/app.html#/i/?cuid=5b30f384-786e-4ced-9010-834cf9ea503b&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","elielma ( Bombox 4)","","- R$ 498,00","R$ 4.462,00","R$ 4.960,00","","27/09/2025","https://app.crediado.com/app.html#/i/?cuid=5ccf7e26-508d-4930-b611-dfc1289802aa&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Marlene emprestimo (12,4)","","- R$ 7.100,00","R$ 5.300,00","R$ 12.400,00","","12/12/2025","https://app.crediado.com/app.html#/i/?cuid=5de3bc87-dac5-49e2-91d5-74845c4d87e8&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Amanda Samira emprestimo (2k)","","- R$ 1.750,00","R$ 1.750,00","R$ 3.500,00","","30/01/2026","https://app.crediado.com/app.html#/i/?cuid=5e633715-0ff3-4121-94c2-a11a5f741163&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Dayana ( cartão)","","- R$ 4.140,00","R$ 2.910,00","R$ 7.050,00","","29/10/2025","https://app.crediado.com/app.html#/i/?cuid=5eb8f1b4-ef8f-4da4-b5a7-676e8d35fdbe&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Elizabete telefone da mãe","","- R$ 650,00","R$ 650,00","R$ 1.300,00","","17/01/2026","https://app.crediado.com/app.html#/i/?cuid=5edf6c56-f89f-45ec-8aea-6bf158849c63&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Jani coqueiral telefone","","- R$ 1.328,00","R$ 332,00","R$ 1.660,00","","10/04/2026","https://app.crediado.com/app.html#/i/?cuid=61effe91-2a7d-46b8-8778-39f843de1e2f&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Yasmin ( honor )","","- R$ 1.120,00","R$ 480,00","R$ 1.600,00","","07/06/2025","https://app.crediado.com/app.html#/i/?cuid=638ad01a-4764-4179-9c7a-8c0a62da5e6f&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Rodrigo iPhone 14","","- R$ 1.265,00","R$ 4.285,00","R$ 5.550,00","","12/11/2025","https://app.crediado.com/app.html#/i/?cuid=641d041e-91b6-40db-bb80-719638846efa&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Pedro Cacimbas empréstimo 1k","","- R$ 293,00","R$ 1.172,00","R$ 1.465,00","","12/02/2026","https://app.crediado.com/app.html#/i/?cuid=64ec2d48-9514-48d0-8c1c-af9196b7ef33&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","cleide empréstimo ( 2,5k)","","- R$ 2.004,00","R$ 2.416,00","R$ 4.420,00","","27/08/2025","https://app.crediado.com/app.html#/i/?cuid=6568491a-4388-46c4-b488-5e9b1f757463&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Rodrigo Realme","","- R$ 1.026,00","R$ 114,00","R$ 1.140,00","","23/05/2026","https://app.crediado.com/app.html#/i/?cuid=662fe299-1c4d-4ea6-9180-25cceeea6e04&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Aninha telefone ( c71 xiaomi)","","- R$ 910,00","R$ 390,00","R$ 1.300,00","","17/04/2026","https://app.crediado.com/app.html#/i/?cuid=6748ee60-51e1-4f19-b777-1d75b87f26c1&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Claudilene aldilene 2k","","- R$ 3.285,00","R$ 365,00","R$ 3.650,00","","25/05/2026","https://app.crediado.com/app.html#/i/?cuid=67bde5b1-bfe9-47f9-8a66-860b3776cecb&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Barbara empréstimo 2500","","- R$ 3.080,00","R$ 1.320,00","R$ 4.400,00","","20/04/2026","https://app.crediado.com/app.html#/i/?cuid=69c248c2-3aca-48be-a2ea-803387754202&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Amanda Samira ( Realme c75)","","- R$ 200,00","R$ 1.800,00","R$ 2.000,00","","30/08/2025","https://app.crediado.com/app.html#/i/?cuid=6a6f932e-cfe3-463d-955f-914574821a9e&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Marciano filha iPhone","","- R$ 4.160,00","R$ 2.080,00","R$ 6.240,00","","12/03/2026","https://app.crediado.com/app.html#/i/?cuid=6aa99787-1821-46ca-bdb9-6a6bc7134f23&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Socorro Filho telefone","","- R$ 1.040,00","R$ 260,00","R$ 1.300,00","","24/04/2026","https://app.crediado.com/app.html#/i/?cuid=6b07ad7a-af82-416d-9c66-98c114bc8479&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Kelly Creche","","- R$ 875,00","R$ 875,00","R$ 1.750,00","","12/02/2026","https://app.crediado.com/app.html#/i/?cuid=6be56fe6-d5f7-4043-aa0e-d94ac94a823d&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Emily FV tv 43","","- R$ 1.970,00","R$ 910,00","R$ 2.880,00","","06/03/2026","https://app.crediado.com/app.html#/i/?cuid=6c263b06-e84c-4358-b40c-6ff4d9188668&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Meike telefone","","- R$ 1.200,00","R$ 300,00","R$ 1.500,00","","12/05/2026","https://app.crediado.com/app.html#/i/?cuid=6edc576c-deab-40d4-ad63-c6125c15234d&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Adriana Geladeira","","- R$ 2.860,00","R$ 1.320,00","R$ 4.180,00","","01/06/2026","https://app.crediado.com/app.html#/i/?cuid=6f441221-3b62-4d06-a475-4accaaa1ca29&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Priscila Feira Abril 26","","- R$ 200,00","R$ 400,00","R$ 600,00","","14/04/2026","https://app.crediado.com/app.html#/i/?cuid=6fce8d7f-d516-4d4f-a46e-14a2ebddeb67&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Genilra Forno Eletrico","","- R$ 510,00","R$ 255,00","R$ 765,00","","20/05/2026","https://app.crediado.com/app.html#/i/?cuid=70796c83-7e7d-4006-82c1-26b587235799&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Roberta Nenê mãe","","- R$ 1.210,00","R$ 0,00","R$ 1.210,00","","27/05/2026","https://app.crediado.com/app.html#/i/?cuid=712c579b-b2c0-41ca-b1d8-cfc3419f6ec8&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Mateus ( cla2200+fla3300)","","- R$ 3.947,00","R$ 2.553,00","R$ 6.500,00","","16/04/2026","https://app.crediado.com/app.html#/i/?cuid=719cb672-8a92-4bb0-be15-1a80aa0dce74&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Beto (2k)","","- R$ 2.100,00","R$ 1.400,00","R$ 3.500,00","","21/02/2026","https://app.crediado.com/app.html#/i/?cuid=71ab0582-c7ec-4694-8848-3545d6be322c&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Dell emprestimo","","- R$ 6.120,00","R$ 1.836,00","R$ 7.956,00","","26/02/2026","https://app.crediado.com/app.html#/i/?cuid=71bc2429-620f-4e4f-b3cc-aab7f880340c&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Rodrigo esposa ( Samsung 02)","","- R$ 332,00","R$ 1.328,00","R$ 1.660,00","","19/10/2025","https://app.crediado.com/app.html#/i/?cuid=71f38edc-4208-4216-8224-93d629660c76&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","ZE baixinho empréstimo","","- R$ 146,00","R$ 584,00","R$ 730,00","","13/02/2026","https://app.crediado.com/app.html#/i/?cuid=72830046-42d9-4c36-b43d-a0a9b0724a18&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Rodrigo ( bombox3)","","- R$ 690,00","R$ 2.760,00","R$ 3.450,00","","27/10/2025","https://app.crediado.com/app.html#/i/?cuid=7389c9c5-1b33-432d-ae4f-3e572b729100&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Nildo Fernanda ( Realme c75)","","- R$ 540,00","R$ 1.260,00","R$ 1.800,00","","12/11/2025","https://app.crediado.com/app.html#/i/?cuid=73d8828b-0542-46a1-ab59-a9e3a28eac5d&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Keli ventilador","","R$ 0,00","R$ 252,00","R$ 252,00","","26/02/2026","https://app.crediado.com/app.html#/i/?cuid=75ab64a6-f973-4b43-99d0-ab096faaa92a&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Lara Barbara","","- R$ 11.000,00","R$ 1.000,00","R$ 12.000,00","","18/05/2026","https://app.crediado.com/app.html#/i/?cuid=764a3fbf-9d4b-453e-9baa-ce551c00315b&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Marta Centro","","- R$ 3.285,00","R$ 365,00","R$ 3.650,00","","21/05/2026","https://app.crediado.com/app.html#/i/?cuid=78715159-6667-4cde-9a68-efd426ca4c2b&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Mateus Alvorecer","","- R$ 2.750,00","R$ 0,00","R$ 2.750,00","","27/04/2026","https://app.crediado.com/app.html#/i/?cuid=7a8c3fe0-8d0b-49f2-9a82-6b7ce92e5cd4&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Simara tia empréstimo","","- R$ 4.900,00","R$ 2.100,00","R$ 7.000,00","","11/03/2026","https://app.crediado.com/app.html#/i/?cuid=7b077535-a529-4579-895b-0cdda3c772e6&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","sobrinha de Roberta coq","","- R$ 440,00","R$ 330,00","R$ 770,00","","04/04/2026","https://app.crediado.com/app.html#/i/?cuid=7b1aa3f0-9bad-4f44-bb3c-196b98e05d61&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Larissa canaã telefone","","- R$ 165,00","R$ 1.485,00","R$ 1.650,00","","25/06/2025","https://app.crediado.com/app.html#/i/?cuid=7b3d73c9-caff-4f49-8cdf-139ddfbcfbb2&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Marcelo projetor","","- R$ 270,00","R$ 135,00","R$ 405,00","","10/06/2026","https://app.crediado.com/app.html#/i/?cuid=7d191022-28ce-4c7b-b787-c2a488272080&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Pamela barbara","","- R$ 200,00","R$ 200,00","R$ 400,00","","24/04/2026","https://app.crediado.com/app.html#/i/?cuid=7e694d0c-a3a0-4898-bd2a-b566939f7a2e&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Manuela painha 5k","","- R$ 7.850,00","R$ 1.570,00","R$ 9.420,00","","24/04/2026","https://app.crediado.com/app.html#/i/?cuid=7f3ecead-58c6-4712-a409-066922a127ab&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Daniela Df Realme 14 5g","","- R$ 2.240,00","R$ 960,00","R$ 3.200,00","","26/03/2026","https://app.crediado.com/app.html#/i/?cuid=7f40138f-caa4-4f9e-99b2-7b050731e78c&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Clecio tanquinho","","- R$ 370,00","R$ 370,00","R$ 740,00","","23/01/2026","https://app.crediado.com/app.html#/i/?cuid=83baa3bd-97c8-4677-af1b-9eec731b0537&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Dudu amiga","","- R$ 455,00","R$ 670,00","R$ 1.125,00","","16/05/2026","https://app.crediado.com/app.html#/i/?cuid=84a5957d-bef7-413c-a2b6-a2547f615b29&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Pele ( Samsung)","","- R$ 150,00","R$ 1.350,00","R$ 1.500,00","","14/12/2025","https://app.crediado.com/app.html#/i/?cuid=84e904ec-f2d7-4278-993d-451cfa47f34f&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Elizandro vizinho PP ( Redmi 13)","","- R$ 250,00","R$ 1.450,00","R$ 1.700,00","","06/05/2025","https://app.crediado.com/app.html#/i/?cuid=84f79199-8f9b-4598-9344-1a6c4622042e&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Jeane Macedo empréstimo 800","","- R$ 1.120,00","R$ 280,00","R$ 1.400,00","","13/04/2026","https://app.crediado.com/app.html#/i/?cuid=853f0159-22c1-46eb-956b-623916c2d05e&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Roberta sogra","","- R$ 2.130,00","R$ 355,00","R$ 2.485,00","","19/05/2026","https://app.crediado.com/app.html#/i/?cuid=853f9e91-219f-4e4b-b8c5-ce7f21a4dfa6&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Barbara empréstimo 300","","- R$ 140,00","R$ 280,00","R$ 420,00","","13/02/2026","https://app.crediado.com/app.html#/i/?cuid=867faa85-4824-4cd1-90e8-40d8131e0d77&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Mara de Calmaria 600","","- R$ 560,00","R$ 280,00","R$ 840,00","","25/05/2026","https://app.crediado.com/app.html#/i/?cuid=86c2dfe8-64e6-42bf-88b4-19a7c9e8d656&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Betaniele telefone","","- R$ 850,00","R$ 850,00","R$ 1.700,00","","16/02/2026","https://app.crediado.com/app.html#/i/?cuid=8824f4dc-b977-4249-924d-d5a65410fa2b&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Elinaldo beta ( xiaomi a3)","","- R$ 125,00","R$ 1.125,00","R$ 1.250,00","","04/10/2025","https://app.crediado.com/app.html#/i/?cuid=8ae42f40-b289-43c8-b88c-de453b90f8bb&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Edjan Renegociação","","- R$ 2.660,00","R$ 0,00","R$ 2.660,00","","12/06/2026","https://app.crediado.com/app.html#/i/?cuid=8b5e7e97-c742-4a1d-b098-6f055259e8bd&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Rosival STC ( tv 55)","","- R$ 790,00","R$ 3.160,00","R$ 3.950,00","","04/11/2025","https://app.crediado.com/app.html#/i/?cuid=8bf050c9-6d7e-48d2-866e-f1866c3866b0&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Simara Tia 2k","","- R$ 2.450,00","R$ 1.050,00","R$ 3.500,00","","24/03/2026","https://app.crediado.com/app.html#/i/?cuid=8d6a836e-1587-40ba-9d50-246d80c526a1&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","aldilene (emprestimo)","","- R$ 708,00","R$ 2.832,00","R$ 3.540,00","","05/11/2025","https://app.crediado.com/app.html#/i/?cuid=8d7fdf64-1ffc-454a-802f-74f5bab8fde0&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Eliane Macedo (xiaomi marido )","","- R$ 350,00","R$ 1.400,00","R$ 1.750,00","","05/11/2025","https://app.crediado.com/app.html#/i/?cuid=8e7b4713-82a7-48fa-81c5-abd7b46ab77c&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Bianca Telefone xiaomi c71","","- R$ 1.040,00","R$ 260,00","R$ 1.300,00","","21/04/2026","https://app.crediado.com/app.html#/i/?cuid=901e9145-a163-4a7b-9b64-aa5ffd2a192b&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Rener Bicicleta","","- R$ 700,00","R$ 1.700,00","R$ 2.400,00","","14/12/2025","https://app.crediado.com/app.html#/i/?cuid=908380b9-bce3-44e3-bd69-18e09995853f&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Richardison","","- R$ 1.980,00","R$ 330,00","R$ 2.310,00","","19/05/2026","https://app.crediado.com/app.html#/i/?cuid=91fbea14-c8e1-43ee-ba6d-1c21c5a58269&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Ronaldo Aleixo ( som )","","- R$ 528,00","R$ 2.112,00","R$ 2.640,00","","22/11/2025","https://app.crediado.com/app.html#/i/?cuid=923baa9d-d06f-4089-a73c-9a61ca02ba25&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Erica Cunhado","","- R$ 3.510,00","R$ 585,00","R$ 4.095,00","","11/06/2026","https://app.crediado.com/app.html#/i/?cuid=926eeccb-07f8-4900-b968-8654375e33d1&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Beto 2k","","- R$ 3.285,00","R$ 365,00","R$ 3.650,00","","22/05/2026","https://app.crediado.com/app.html#/i/?cuid=9590227d-2feb-4a6b-9906-ec5781bb311e&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Daniela cohab emprestimo 3,5 k","","- R$ 3.672,00","R$ 2.448,00","R$ 6.120,00","","12/03/2026","https://app.crediado.com/app.html#/i/?cuid=95bf44cb-0ec6-4fa7-b493-e06b74809da6&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Sabrina filha de Nega( Geladeira)","","- R$ 417,00","R$ 4.587,00","R$ 5.004,00","","13/06/2025","https://app.crediado.com/app.html#/i/?cuid=98116e5f-35ed-460d-a0e5-cec3059d88d6&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Edson de meik 1k","","- R$ 1.400,00","R$ 350,00","R$ 1.750,00","","25/04/2026","https://app.crediado.com/app.html#/i/?cuid=99e51f57-aa58-4afa-a0f9-47c963c93b44&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","ozana alvorecer 15c","","- R$ 1.328,00","R$ 332,00","R$ 1.660,00","","18/04/2026","https://app.crediado.com/app.html#/i/?cuid=9af2abfc-5c08-4157-bbfc-6fee6041d023&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Stephanie ( empréstimo)","","- R$ 550,00","R$ 2.200,00","R$ 2.750,00","","11/10/2025","https://app.crediado.com/app.html#/i/?cuid=9bbf963a-595e-4aae-8f23-2052344e5985&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Kelly Creche emprestimo px","","- R$ 304,00","R$ 608,00","R$ 912,00","","02/03/2026","https://app.crediado.com/app.html#/i/?cuid=9bc66279-0f9f-49c0-8d89-1525269053a7&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Marleide centrífuga","","- R$ 204,00","R$ 826,00","R$ 1.030,00","","05/11/2025","https://app.crediado.com/app.html#/i/?cuid=9c186087-fa25-47ed-a4a2-bdbfa98dcb78&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Rodrigo Fomes de Ouvidos","","- R$ 780,00","R$ 780,00","R$ 1.560,00","","24/01/2026","https://app.crediado.com/app.html#/i/?cuid=9d37d1c0-3ced-4313-82bd-959076564c8b&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","kauan ( emprestimo 5k)","","- R$ 874,00","R$ 7.966,00","R$ 8.840,00","","03/10/2025","https://app.crediado.com/app.html#/i/?cuid=9f4ac246-de26-42b2-b00b-84fe2da2dafb&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","vania Maira empréstimo","","- R$ 295,00","R$ 1.180,00","R$ 1.475,00","","27/03/2026","https://app.crediado.com/app.html#/i/?cuid=9f8247c8-9297-4e13-900e-d16d734f4261&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Eliane Macedo ( Realme Note 60)","","- R$ 266,00","R$ 1.064,00","R$ 1.330,00","","11/10/2025","https://app.crediado.com/app.html#/i/?cuid=a2d57522-90f6-4cad-a4a4-2bf2e9bf9407&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Nando poco c85","","- R$ 1.620,00","R$ 180,00","R$ 1.800,00","","15/06/2026","https://app.crediado.com/app.html#/i/?cuid=a3d6e141-9d08-4695-a31f-c2eea87f401e&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","mãe de Fernanda filho ( telefone)","","- R$ 340,00","R$ 1.360,00","R$ 1.700,00","","22/10/2025","https://app.crediado.com/app.html#/i/?cuid=a3e4c534-7058-4bc9-801c-f5994d99bd1b&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Emily bolsa","","R$ 0,00","R$ 162,00","R$ 162,00","","29/03/2026","https://app.crediado.com/app.html#/i/?cuid=a4224e53-1abb-4e65-a265-1e942eb00d00&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Thaisa telefone","","- R$ 1.720,00","R$ 430,00","R$ 2.150,00","","17/06/2026","https://app.crediado.com/app.html#/i/?cuid=a4710d39-bf53-4544-b780-668c1adae389&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Valmaria Guarda Roupas","","- R$ 1.488,00","R$ 372,00","R$ 1.860,00","","10/04/2026","https://app.crediado.com/app.html#/i/?cuid=a4cc3f52-06b4-466c-aba3-ff2a8875970e&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Bianca Aninha Cell","","- R$ 125,00","R$ 1.125,00","R$ 1.250,00","","30/01/2026","https://app.crediado.com/app.html#/i/?cuid=a4cd6b4d-041b-4cdb-a682-9bd889ab5aff&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Maira emprestimo 1k","","R$ 0,00","R$ 1.518,00","R$ 1.518,00","","26/12/2025","https://app.crediado.com/app.html#/i/?cuid=a5ef73a0-6bb9-48f0-97e5-dcf6cb65c282&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","alane 2 telefones","","- R$ 1.980,00","R$ 1.320,00","R$ 3.300,00","","26/02/2026","https://app.crediado.com/app.html#/i/?cuid=a711ce36-32e3-4067-83da-0a8d3bf5a644&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Dani Richardison","","- R$ 1.593,00","R$ 177,00","R$ 1.770,00","","27/05/2026","https://app.crediado.com/app.html#/i/?cuid=a7c318d5-51ec-42c6-97a7-039ab1ecf567&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Sueli Df xiaomi","","- R$ 1.625,00","R$ 1.625,00","R$ 3.250,00","","10/02/2026","https://app.crediado.com/app.html#/i/?cuid=aa58f21d-88be-41ad-b524-c7a479b48f5d&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Iasmin tv usada","","- R$ 600,00","R$ 300,00","R$ 900,00","","25/05/2026","https://app.crediado.com/app.html#/i/?cuid=aad78673-e922-4ace-a500-558bb8cc263f&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Dudu empréstimo","","- R$ 121,00","R$ 0,00","R$ 121,00","","15/04/2026","https://app.crediado.com/app.html#/i/?cuid=acf727a3-5dd4-4cd4-9e53-0e3c5eddac4f&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Lenilda mãe de Joice","","- R$ 1.125,00","R$ 125,00","R$ 1.250,00","","03/06/2026","https://app.crediado.com/app.html#/i/?cuid=ad0ff590-cfa6-4710-aa60-1254fe58a75e&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Erica canaã poco m7","","- R$ 680,00","R$ 1.020,00","R$ 1.700,00","","25/12/2025","https://app.crediado.com/app.html#/i/?cuid=ad934c3c-e16b-4faa-9497-419eba6f5ebc&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Dalva","","- R$ 250,00","R$ 850,00","R$ 1.100,00","","04/03/2026","https://app.crediado.com/app.html#/i/?cuid=aeccafcb-5f2f-4b86-8b3f-33c879b56c7e&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","aracele ( poco 75)","","- R$ 650,00","R$ 850,00","R$ 1.500,00","","03/07/2025","https://app.crediado.com/app.html#/i/?cuid=af196e8c-fe94-4212-a3cf-640c0d662867&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","jeova ( oppo a58)","","- R$ 160,00","R$ 1.440,00","R$ 1.600,00","","22/09/2025","https://app.crediado.com/app.html#/i/?cuid=af386b63-cc55-441d-ba78-faa2d5d1b3a1&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Taina independente","","- R$ 850,00","R$ 850,00","R$ 1.700,00","","24/01/2026","https://app.crediado.com/app.html#/i/?cuid=b0e5d854-7847-400f-8f38-2b30db752175&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Carlos Marcia ( emprestimo)","","- R$ 2.600,00","R$ 2.600,00","R$ 5.200,00","","20/12/2025","https://app.crediado.com/app.html#/i/?cuid=b1790225-9713-481d-bff9-492a0d2925be&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Mateus nega ( oppo a58)","","- R$ 160,00","R$ 1.440,00","R$ 1.600,00","","08/08/2025","https://app.crediado.com/app.html#/i/?cuid=b4d35646-5fb8-4e18-b380-97cca76ea212&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","filho de Neide centro POCO c85","","- R$ 850,00","R$ 850,00","R$ 1.700,00","","24/01/2026","https://app.crediado.com/app.html#/i/?cuid=b59c0f9e-bd8e-4cd6-a480-eccb9d6a9974&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Amanda alvorecer ( Samsung)","","- R$ 310,00","R$ 740,00","R$ 1.050,00","","25/01/2026","https://app.crediado.com/app.html#/i/?cuid=b70ad5d6-5271-40f7-90f3-39ac08ec63e2&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Nando Tv 43","","- R$ 500,00","R$ 2.000,00","R$ 2.500,00","","04/11/2025","https://app.crediado.com/app.html#/i/?cuid=b88ca3fa-01c3-4559-81cd-1e0665b14afc&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Gisele Cilene nota 60","","- R$ 315,00","R$ 735,00","R$ 1.050,00","","22/11/2025","https://app.crediado.com/app.html#/i/?cuid=b90c7e33-db3b-4a22-8d99-5d2b62c32c73&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Solange Independente empréstimo 3,5k","","- R$ 3.672,00","R$ 2.448,00","R$ 6.120,00","","13/02/2026","https://app.crediado.com/app.html#/i/?cuid=b9b051d1-e57a-484e-9112-fc62afef634b&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Priscila Feira junho","","- R$ 630,00","R$ 0,00","R$ 630,00","","16/06/2026","https://app.crediado.com/app.html#/i/?cuid=bb536fb0-9b8e-4d99-8474-0ffbc75d624f&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Branco empréstimo 1500","","- R$ 1.060,00","R$ 1.590,00","R$ 2.650,00","","16/02/2026","https://app.crediado.com/app.html#/i/?cuid=bbc26afe-234b-4255-ad04-f655765ed9c3&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Rodrigo 2k","","- R$ 2.450,00","R$ 1.050,00","R$ 3.500,00","","26/03/2026","https://app.crediado.com/app.html#/i/?cuid=bc07f64b-15bb-476e-83d2-6b14c1e73fb9&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Thaisa ( maquina)","","- R$ 150,00","R$ 4.250,00","R$ 4.400,00","","22/05/2025","https://app.crediado.com/app.html#/i/?cuid=be73b7ff-5d4d-401b-8cfb-4f180609d492&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","mãe de Fernanda noemi (telefone)","","- R$ 520,00","R$ 1.030,00","R$ 1.550,00","","02/08/2025","https://app.crediado.com/app.html#/i/?cuid=be8b5dd7-8443-4923-8da9-6b3efcccbd88&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Roberta amiga PX","","- R$ 350,00","R$ 1.050,00","R$ 1.400,00","","03/03/2026","https://app.crediado.com/app.html#/i/?cuid=bf913c88-9567-47e2-8478-a027f17d7c2c&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Roberta coq Realme C75x","","- R$ 965,00","R$ 965,00","R$ 1.930,00","","10/02/2026","https://app.crediado.com/app.html#/i/?cuid=c01b9a7a-9144-499c-8366-437868def7a1&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Jamile Macedo tv","","- R$ 930,00","R$ 2.170,00","R$ 3.100,00","","16/12/2025","https://app.crediado.com/app.html#/i/?cuid=c0afbea5-90da-4ae2-87a8-0a5309939a2a&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Lenilda DF Samsung","","- R$ 1.085,00","R$ 465,00","R$ 1.550,00","","11/03/2026","https://app.crediado.com/app.html#/i/?cuid=c1848e2f-3fc7-4052-94bb-ff9e64cb2ddd&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Emily FV Capacete","","- R$ 213,00","R$ 142,00","R$ 355,00","","16/04/2026","https://app.crediado.com/app.html#/i/?cuid=c22f7305-d628-42ed-987c-8e8ec699800d&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","marleide( tv 40 )","","- R$ 205,00","R$ 1.845,00","R$ 2.050,00","","05/10/2025","https://app.crediado.com/app.html#/i/?cuid=c28d3fe5-11f5-403c-a0fd-a9f33b76daca&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Tiago alvorecer ( telefone)","","- R$ 100,00","R$ 900,00","R$ 1.000,00","","12/08/2025","https://app.crediado.com/app.html#/i/?cuid=c32b80c6-200f-4d68-80e6-136541e79138&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Erica kit cozinha","","- R$ 620,00","R$ 155,00","R$ 775,00","","25/05/2026","https://app.crediado.com/app.html#/i/?cuid=c50cb6e9-de0b-4ae5-a300-3fdee33bfe0a&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","iris (Realme c75)","","- R$ 1.360,00","R$ 340,00","R$ 1.700,00","","09/11/2025","https://app.crediado.com/app.html#/i/?cuid=c55af623-49b2-49e5-8ad6-1e92b4062e67&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Barbara Marido","","- R$ 4.100,00","R$ 450,00","R$ 4.550,00","","23/05/2026","https://app.crediado.com/app.html#/i/?cuid=c562cbc7-6bb5-4ff2-ae5a-f5844fc0b9d9&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Keli Checha 1k 2°","","- R$ 1.225,00","R$ 525,00","R$ 1.750,00","","11/04/2026","https://app.crediado.com/app.html#/i/?cuid=c6a9e833-e254-4981-8a14-593e6bbdbfab&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Rubevania ( poco x7)","","- R$ 780,00","R$ 2.340,00","R$ 3.120,00","","30/09/2025","https://app.crediado.com/app.html#/i/?cuid=c7425bb0-c64f-428d-b40c-c96b2807f540&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Simara mãe emprestimo","","- R$ 1.590,00","R$ 3.710,00","R$ 5.300,00","","25/12/2025","https://app.crediado.com/app.html#/i/?cuid=c82499bc-ee82-426a-8cff-1206f3f41c8a&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Rute 2 telefone","","- R$ 555,00","R$ 1.295,00","R$ 1.850,00","","19/11/2025","https://app.crediado.com/app.html#/i/?cuid=c9818fe5-455b-4678-af40-447f01ea5c7f&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Jeane Macedo empréstimo 1k","","- R$ 1.062,00","R$ 708,00","R$ 1.770,00","","13/02/2026","https://app.crediado.com/app.html#/i/?cuid=c9db826f-29e0-4d09-a69f-d75b59115a2c&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Cristiano/ Rafael emprestimo","","- R$ 1.550,00","R$ 1.450,00","R$ 3.000,00","","30/11/2025","https://app.crediado.com/app.html#/i/?cuid=cab69882-c9a8-41c5-999b-09e37cc8d66e&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Eliane Macedo 1k","","- R$ 506,00","R$ 1.012,00","R$ 1.518,00","","26/02/2026","https://app.crediado.com/app.html#/i/?cuid=cb10e8a2-19c2-4822-99d8-90745ba3dd34&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Rogerio independente Ar","","- R$ 1.652,00","R$ 708,00","R$ 2.360,00","","11/03/2026","https://app.crediado.com/app.html#/i/?cuid=cb873027-0446-4d8f-8f3d-fadb894e0598&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Ze baixinho Moto G15","","- R$ 429,00","R$ 1.001,00","R$ 1.430,00","","01/02/2026","https://app.crediado.com/app.html#/i/?cuid=cc542fa0-5a2e-436d-a007-df757159ab5b&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Claudia aninha ( tv 32)","","R$ 0,00","R$ 1.500,00","R$ 1.500,00","","19/09/2025","https://app.crediado.com/app.html#/i/?cuid=cd23f679-9edd-4d69-a556-8a37427e3be3&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Priscila mãe ( TV)","","- R$ 540,00","R$ 1.710,00","R$ 2.250,00","","26/10/2025","https://app.crediado.com/app.html#/i/?cuid=cdd6c312-07fb-4d2a-9b43-935fa37fbaab&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Lene Independente telefone","","- R$ 1.360,00","R$ 340,00","R$ 1.700,00","","30/05/2026","https://app.crediado.com/app.html#/i/?cuid=cea10f79-6d2e-4f5e-91ba-adef3fb7b08a&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Tayrine telefone","","- R$ 1.188,00","R$ 132,00","R$ 1.320,00","","18/06/2026","https://app.crediado.com/app.html#/i/?cuid=ceb96e99-cad5-428d-9dde-06b276380e62&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Rosineide de Keli","","- R$ 1.758,00","R$ 1.172,00","R$ 2.930,00","","15/04/2026","https://app.crediado.com/app.html#/i/?cuid=cf0fc1af-14c3-413c-a187-f03caa34cdc6&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Marciano Geladeira","","- R$ 2.950,00","R$ 2.950,00","R$ 5.900,00","","20/01/2026","https://app.crediado.com/app.html#/i/?cuid=cf23b284-bf23-4acf-b77f-0c447fc9767d&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Mauricéia ( Telefone Cunhado)","","- R$ 80,00","R$ 1.420,00","R$ 1.500,00","","26/05/2025","https://app.crediado.com/app.html#/i/?cuid=cf2a507c-9759-4233-aead-b140318c5d4f&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Lenilda ( telefone sobrinho )","","- R$ 152,45","R$ 1.387,55","R$ 1.540,00","","24/09/2025","https://app.crediado.com/app.html#/i/?cuid=cfb72cb7-fcb3-4f7f-97c6-93d508d489eb&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Geise painha ( Realme c75)","","- R$ 1.325,00","R$ 775,00","R$ 2.100,00","","02/08/2025","https://app.crediado.com/app.html#/i/?cuid=d0195299-5275-4c45-9712-38087c6d503b&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Beatriz ( máquina de costura)","","- R$ 488,00","R$ 4.392,00","R$ 4.880,00","","27/08/2025","https://app.crediado.com/app.html#/i/?cuid=d43eaf75-3ed8-48fc-b810-126f9ae31232&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Alexandre projetor","","- R$ 270,00","R$ 135,00","R$ 405,00","","10/06/2026","https://app.crediado.com/app.html#/i/?cuid=d5752e0f-9ec2-48d5-b3e3-ecef2de6704c&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Priscila ind (900)","","- R$ 942,00","R$ 628,00","R$ 1.570,00","","21/02/2026","https://app.crediado.com/app.html#/i/?cuid=d63b9c8e-8ed1-4628-99f8-77b515ff80f7&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Erica Canaã Poco 85","","- R$ 840,00","R$ 560,00","R$ 1.400,00","","17/03/2026","https://app.crediado.com/app.html#/i/?cuid=d74de6d1-c126-4ba0-a2cc-922a5a3ea5fb&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Julia canaã tv","","- R$ 668,00","R$ 1.002,00","R$ 1.670,00","","18/01/2026","https://app.crediado.com/app.html#/i/?cuid=d77d2fcf-94c9-4f34-8613-d24fd70da64d&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Kauan empréstimo 3,5 k","","- R$ 3.060,00","R$ 3.060,00","R$ 6.120,00","","28/02/2026","https://app.crediado.com/app.html#/i/?cuid=d7ce89b4-765f-4941-854b-0d52c3ed7519&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Erica Cunhado ( Emprestimo 2,5k )","","- R$ 2.190,00","R$ 2.190,00","R$ 4.380,00","","27/01/2026","https://app.crediado.com/app.html#/i/?cuid=d7d85ad0-2450-4ec2-93ea-4c8993543b79&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","lene mãe independente telefone","","- R$ 1.300,00","R$ 400,00","R$ 1.700,00","","30/05/2026","https://app.crediado.com/app.html#/i/?cuid=d7dbcea3-7213-4c8f-ac40-a91749c3c46c&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Mãe de Daniela DF","","- R$ 1.020,00","R$ 510,00","R$ 1.530,00","","24/04/2026","https://app.crediado.com/app.html#/i/?cuid=d912334f-d169-4e3a-bda9-5f42fac696e5&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Ana Julia ( empréstimo)","","- R$ 1.062,00","R$ 2.478,00","R$ 3.540,00","","08/11/2025","https://app.crediado.com/app.html#/i/?cuid=d9675b21-0cb0-4e95-913b-3a0501fe70a8&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Nizet telefone","","- R$ 438,00","R$ 1.022,00","R$ 1.460,00","","25/10/2025","https://app.crediado.com/app.html#/i/?cuid=db7d649f-bf1d-497a-ba33-ffe4d46d9392&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Marcia igreja","","- R$ 1.200,00","R$ 1.800,00","R$ 3.000,00","","03/12/2025","https://app.crediado.com/app.html#/i/?cuid=dd79f967-c5a7-48e7-950f-ef8a2208919a&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Larissa canaã ( tv)","","- R$ 920,00","R$ 2.180,00","R$ 3.100,00","","20/09/2025","https://app.crediado.com/app.html#/i/?cuid=de31d022-6094-4efc-8842-5d3bff04d453&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Aliston Independente","","- R$ 1.624,00","R$ 696,00","R$ 2.320,00","","18/04/2026","https://app.crediado.com/app.html#/i/?cuid=de5bffb3-fcad-4a99-82ef-ea1fa0ad41cd&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Daniela Emp. irmão 306","","- R$ 3.366,00","R$ 306,00","R$ 3.672,00","","23/05/2026","https://app.crediado.com/app.html#/i/?cuid=de72d2cf-16b5-4ade-8f71-40a4a2843f9e&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Nando xiaomi 15c","","- R$ 1.360,00","R$ 340,00","R$ 1.700,00","","18/04/2026","https://app.crediado.com/app.html#/i/?cuid=dfe525a2-c6e0-4da4-936f-0ff250de0d1f&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Rodrigo (empréstimo 5k)","","- R$ 5.100,00","R$ 6.300,00","R$ 11.400,00","","24/08/2025","https://app.crediado.com/app.html#/i/?cuid=e0f1ccea-bcaa-4c95-8568-c363f7c96e8c&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Tatiana kaik (sofá e geladeira)","","- R$ 3.595,00","R$ 8.105,00","R$ 11.700,00","","09/07/2025","https://app.crediado.com/app.html#/i/?cuid=e2751bba-3fd0-4eae-b4a8-48d33f0fc34b&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Ana Julia 3K","","- R$ 4.905,00","R$ 545,00","R$ 5.450,00","","21/05/2026","https://app.crediado.com/app.html#/i/?cuid=e3869fdf-5652-424d-b6bf-79c11cb134fa&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Diana Independente","","- R$ 1.328,00","R$ 332,00","R$ 1.660,00","","15/04/2026","https://app.crediado.com/app.html#/i/?cuid=e452f31c-6264-4f33-9f4b-59b8e9c94dcb&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","silene 2° caixa de som","","- R$ 1.612,00","R$ 998,00","R$ 2.610,00","","24/01/2026","https://app.crediado.com/app.html#/i/?cuid=e5c10b2d-da50-4db9-80f8-3dc87ebdc54a&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Josi (note50)","","- R$ 350,00","R$ 1.050,00","R$ 1.400,00","","20/10/2024","https://app.crediado.com/app.html#/i/?cuid=e896de55-c406-4901-831f-dc565195bdec&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Marlene Macedo telefone usado","","- R$ 400,00","R$ 320,00","R$ 720,00","","14/03/2026","https://app.crediado.com/app.html#/i/?cuid=ea6b7e15-74a5-461f-905e-21a8d8176f8f&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Dudu conserto do carro","","- R$ 198,00","R$ 396,00","R$ 594,00","","17/03/2026","https://app.crediado.com/app.html#/i/?cuid=eae510f8-3720-4ee5-b688-7b233848e196&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Daniela Df Empr. 1,8k 315","","- R$ 1.575,00","R$ 1.575,00","R$ 3.150,00","","26/01/2026","https://app.crediado.com/app.html#/i/?cuid=eaead3d0-9fd9-4149-8fcb-cb837b6c17fe&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Jurandir filho notebook","","- R$ 2.700,00","R$ 1.800,00","R$ 4.500,00","","03/03/2026","https://app.crediado.com/app.html#/i/?cuid=eb0477b1-3242-4aaa-88eb-3c2ac8f483d9&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Priscila 2k semanal","","- R$ 3.374,00","R$ 276,00","R$ 3.650,00","","16/06/2026","https://app.crediado.com/app.html#/i/?cuid=eb19f091-594a-4738-b768-88f6b8b9acbd&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Daniele irmão ( 1900)","","- R$ 3.672,00","R$ 0,00","R$ 3.672,00","","15/05/2026","https://app.crediado.com/app.html#/i/?cuid=eb420d48-9f1f-4179-9b69-4cc8e49c3b91&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Daniele DF Empr. 210","","- R$ 210,00","R$ 630,00","R$ 840,00","","25/04/2026","https://app.crediado.com/app.html#/i/?cuid=ebc3f463-d883-4486-abad-64f367cadc17&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Maira empréstimo 1,5 k PX","","- R$ 1.140,00","R$ 1.140,00","R$ 2.280,00","","03/03/2026","https://app.crediado.com/app.html#/i/?cuid=ec6f44dd-dbd0-4070-b495-37d471caa5fd&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Vania ( honor)","","- R$ 400,00","R$ 600,00","R$ 1.000,00","","01/12/2025","https://app.crediado.com/app.html#/i/?cuid=ecbff02d-ec3c-4ae1-b4f9-ad36878ea0ac&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Jeová iPhone","","- R$ 3.258,00","R$ 1.086,00","R$ 4.344,00","","13/03/2026","https://app.crediado.com/app.html#/i/?cuid=eef6a888-d3ae-4975-8083-53d58af8396e&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Welington som","","- R$ 618,00","R$ 412,00","R$ 1.030,00","","14/03/2026","https://app.crediado.com/app.html#/i/?cuid=f00bb285-7a07-4d00-9f54-3287dd2bdfaf&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","wiliane (Motorola)","","- R$ 400,00","R$ 1.000,00","R$ 1.400,00","","23/06/2025","https://app.crediado.com/app.html#/i/?cuid=f08b3441-f7c6-46b5-8be2-fb4031ca8f70&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Daniela Cohab","","- R$ 335,00","R$ 335,00","R$ 670,00","","18/05/2026","https://app.crediado.com/app.html#/i/?cuid=f0d2e1e2-bfe0-4761-b393-4286b45982d9&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Fernanda( máquina de lavar )","","- R$ 996,00","R$ 2.988,00","R$ 3.984,00","","19/10/2025","https://app.crediado.com/app.html#/i/?cuid=f0f61e43-2458-4561-907e-467efe9ccba9&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Renaly Alvorecer","","- R$ 1.170,00","R$ 130,00","R$ 1.300,00","","13/05/2026","https://app.crediado.com/app.html#/i/?cuid=f1526c2c-0a4e-4484-a888-8b4f68711193&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","marciano ( guarda roupa casal)","","- R$ 300,00","R$ 2.700,00","R$ 3.000,00","","01/10/2025","https://app.crediado.com/app.html#/i/?cuid=f1abbbeb-bce7-40ea-96c5-c48690de4cb7&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Daniela Df Empr. 237","","- R$ 474,00","R$ 2.370,00","R$ 2.844,00","","14/08/2025","https://app.crediado.com/app.html#/i/?cuid=f32d8805-64a6-48a5-901f-55b595b484c9&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","gerone Df Motorola","","- R$ 1.204,00","R$ 516,00","R$ 1.720,00","","31/03/2026","https://app.crediado.com/app.html#/i/?cuid=f60372d7-769e-48ca-a3c9-4fedebe107dd&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Painha Realme janeiro","","- R$ 400,00","R$ 1.100,00","R$ 1.500,00","","10/01/2026","https://app.crediado.com/app.html#/i/?cuid=f66a8941-7270-46f3-b12d-0796881201da&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Beatriz 1500","","- R$ 1.975,00","R$ 395,00","R$ 2.370,00","","23/06/2026","https://app.crediado.com/app.html#/i/?cuid=f74886f2-5c07-4c48-90c7-eeb7f20995be&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","taiane Bombox(Colorado)","","- R$ 410,00","R$ 2.790,00","R$ 3.200,00","","29/03/2024","https://app.crediado.com/app.html#/i/?cuid=f78683ca-69bc-424a-8365-5a301352e3f3&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Flavio emprestimo","","- R$ 1.850,00","R$ 0,00","R$ 1.850,00","","25/06/2026","https://app.crediado.com/app.html#/i/?cuid=f7d52e6e-6127-4424-a583-d3054690da79&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","aninha Thainá ( oppo)","","- R$ 160,00","R$ 1.440,00","R$ 1.600,00","","04/10/2025","https://app.crediado.com/app.html#/i/?cuid=f810fb7d-118e-49c5-aedb-419c057a2171&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Genilda Emprestimo 5k","","- R$ 6.318,00","R$ 4.212,00","R$ 10.530,00","","23/01/2026","https://app.crediado.com/app.html#/i/?cuid=f8a4c7a6-c0c4-450e-bf7d-b5d81711ff59&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Eliane Macedo empréstimo 500","","- R$ 350,00","R$ 350,00","R$ 700,00","","16/04/2026","https://app.crediado.com/app.html#/i/?cuid=fb61ee78-1b7e-4534-b7a5-2dc98dddd208&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Jeane ( Redmi 15C )","","- R$ 930,00","R$ 930,00","R$ 1.860,00","","16/01/2026","https://app.crediado.com/app.html#/i/?cuid=fc43d02f-8b6f-46f3-ac7f-aeb08563a58f&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Atelicia de Simara 1k","","- R$ 1.850,00","R$ 0,00","R$ 1.850,00","","15/06/2026","https://app.crediado.com/app.html#/i/?cuid=fc9281c2-edf2-4ca6-aa52-90a2269ce2c1&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Gisele Emprestado","","- R$ 3.000,00","R$ 0,00","R$ 3.000,00","","11/06/2026","https://app.crediado.com/app.html#/i/?cuid=fcc341bd-131b-437c-b342-260b60e46be6&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Roberta Df 2 emprestimo","","- R$ 1.725,00","R$ 1.725,00","R$ 3.450,00","","22/01/2026","https://app.crediado.com/app.html#/i/?cuid=fd350223-5b5c-4c5c-a4da-ff6be23a3ffa&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Sergio coqueiral ( empréstimo 1k)","","- R$ 354,00","R$ 1.416,00","R$ 1.770,00","","14/10/2025","https://app.crediado.com/app.html#/i/?cuid=017b1c60-962a-4bfe-bef7-3753dc0e568a&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Jane Macedo empréstimo","","- R$ 7.065,00","R$ 2.355,00","R$ 9.420,00","","26/03/2026","https://app.crediado.com/app.html#/i/?cuid=01a84c7c-6cff-4260-b20f-b23aa9d64fad&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Jaciele Nilzete canaã telefone","","- R$ 1.162,00","R$ 498,00","R$ 1.660,00","","10/04/2026","https://app.crediado.com/app.html#/i/?cuid=02efc41c-19fd-4dd4-b098-66d644e6c4fe&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Genilra coocktop","","- R$ 570,00","R$ 285,00","R$ 855,00","","20/05/2026","https://app.crediado.com/app.html#/i/?cuid=0341dc9b-7ca8-4eec-b8b2-d8ff1be382af&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Laysa poco x7","","- R$ 1.536,00","R$ 1.524,00","R$ 3.060,00","","15/01/2026","https://app.crediado.com/app.html#/i/?cuid=0434126e-4735-4f31-91c0-824cac95bc0b&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","DanielaDf Empr. 2k 314","","- R$ 1.570,00","R$ 2.198,00","R$ 3.768,00","","27/12/2025","https://app.crediado.com/app.html#/i/?cuid=04661231-1c4b-4919-8f59-c7955b759836&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Simone da cheche 1k","","- R$ 1.230,00","R$ 425,00","R$ 1.655,00","","17/04/2026","https://app.crediado.com/app.html#/i/?cuid=04a44188-6f25-4892-b9be-ae7c50ac17ab&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Simara PB ( 1k)","","- R$ 875,00","R$ 875,00","R$ 1.750,00","","26/01/2026","https://app.crediado.com/app.html#/i/?cuid=0593cf0f-3e44-499d-b6a5-5cda5bf18fbe&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Cilene Samsung","","- R$ 4.020,00","R$ 1.005,00","R$ 5.025,00","","30/04/2026","https://app.crediado.com/app.html#/i/?cuid=b64414ca-966b-4d35-802f-8ed4bcf48561&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Emili FV Marido ( Note 14 pro)","","- R$ 511,00","R$ 2.549,00","R$ 3.060,00","","14/08/2025","https://app.crediado.com/app.html#/i/?cuid=06898638-1b21-4c35-a8c0-d761fa10c565&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Elaine (empréstimo 3,5k)","","- R$ 3.267,00","R$ 2.043,00","R$ 5.310,00","","30/08/2025","https://app.crediado.com/app.html#/i/?cuid=0964d6bb-7ce9-4322-847d-db0ae568566d&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Elaine empréstimo 1k","","- R$ 1.150,00","R$ 0,00","R$ 1.150,00","","05/10/2025","https://app.crediado.com/app.html#/i/?cuid=0ab54fac-7c21-4021-8dbd-d5d5e4bacd4e&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Priscila e Dell","","- R$ 750,00","R$ 750,00","R$ 1.500,00","","26/03/2026","https://app.crediado.com/app.html#/i/?cuid=0b8bde04-5f82-4450-a19f-a128a558c5c3&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","valmaria (empréstimo 2,5k novembro)","","- R$ 1.568,00","R$ 3.136,00","R$ 4.704,00","","05/11/2025","https://app.crediado.com/app.html#/i/?cuid=0ba9a634-1479-4059-90c8-dbe2bc45290a&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Sergio Empréstimo 5k","","- R$ 6.125,00","R$ 2.625,00","R$ 8.750,00","","16/04/2026","https://app.crediado.com/app.html#/i/?cuid=0bd0b9f9-1787-44ae-acb1-b880c42333ab&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Eliel (Deus e Fiel)","","- R$ 300,00","R$ 1.200,00","R$ 1.500,00","","03/03/2024","https://app.crediado.com/app.html#/i/?cuid=0cfe6140-3ed3-449e-ad26-0d0a7edf8da7&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Alane emprestimo 750","","- R$ 1.000,00","R$ 200,00","R$ 1.200,00","","15/06/2026","https://app.crediado.com/app.html#/i/?cuid=0e95bf59-280c-40cf-bcb4-a7031651262f&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Ana Julia ( emprestimo 2k) 01 25","","- R$ 2.100,00","R$ 1.400,00","R$ 3.500,00","","26/01/2026","https://app.crediado.com/app.html#/i/?cuid=0ed8d62f-13fb-4cdc-b25e-c6ea147955ea&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Vania coq Tv 50","","- R$ 3.450,00","R$ 0,00","R$ 3.450,00","","27/06/2026","https://app.crediado.com/app.html#/i/?cuid=0f6de8e0-7b08-4adb-8b25-e098f69e0f1d&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","jeova relogio","","- R$ 370,00","R$ 50,00","R$ 420,00","","18/06/2026","https://app.crediado.com/app.html#/i/?cuid=0fad2791-af31-47ec-a9b5-1ee060268542&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","valmaria prima ( empréstimo)","","- R$ 566,00","R$ 2.264,00","R$ 2.830,00","","29/10/2025","https://app.crediado.com/app.html#/i/?cuid=101164dd-f693-44f6-8637-eac61c160d40&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Ellen da Creche 1k","","- R$ 1.230,00","R$ 425,00","R$ 1.655,00","","17/04/2026","https://app.crediado.com/app.html#/i/?cuid=11067f2a-1b5e-4595-b79f-82f6c346d48e&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Marleide ar condicionado","","- R$ 2.475,00","R$ 275,00","R$ 2.750,00","","10/05/2026","https://app.crediado.com/app.html#/i/?cuid=12ed741f-ef6d-4a9b-bddf-296130cf1a56&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Beto 2k 2","","- R$ 2.100,00","R$ 1.400,00","R$ 3.500,00","","24/02/2026","https://app.crediado.com/app.html#/i/?cuid=15093173-70ac-4977-b1df-1603f5e82ebc&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Maria do Terço Redmi 13c 2ª","","- R$ 250,00","R$ 1.250,00","R$ 1.500,00","","01/06/2024","https://app.crediado.com/app.html#/i/?cuid=163f7852-4362-4a55-8345-0468759b56ea&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Valmaria Tv 40\"","","- R$ 1.840,00","R$ 460,00","R$ 2.300,00","","10/04/2026","https://app.crediado.com/app.html#/i/?cuid=185facff-94ae-43f8-9a52-950d0dc29c65&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","genilda ( oppo a58)","","- R$ 320,00","R$ 1.280,00","R$ 1.600,00","","20/09/2025","https://app.crediado.com/app.html#/i/?cuid=1a3f685f-bdba-4d30-95ce-27c74eb6c33b&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Niele tv 65 centro erica","","- R$ 3.120,00","R$ 2.080,00","R$ 5.200,00","","06/03/2026","https://app.crediado.com/app.html#/i/?cuid=1cd59870-9d6b-4708-8032-93e3b7089eb3&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Marlene Macedo Microondas","","- R$ 1.170,00","R$ 130,00","R$ 1.300,00","","13/05/2026","https://app.crediado.com/app.html#/i/?cuid=1ed988bf-5f5e-4a6f-be5c-9fa346372846&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Raquel empréstimo 7k","","- R$ 3.500,00","R$ 3.500,00","R$ 7.000,00","","10/02/2026","https://app.crediado.com/app.html#/i/?cuid=1f6a6373-0954-45ed-a989-cfbc8e5956e9&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Jeane Macedo ( empréstimo 3)","","- R$ 531,00","R$ 1.239,00","R$ 1.770,00","","29/10/2025","https://app.crediado.com/app.html#/i/?cuid=20524706-4607-4cd3-8480-4cd0e77232a0&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Mateus Nega ( emprestimo)","","- R$ 4.425,00","R$ 4.425,00","R$ 8.850,00","","17/12/2025","https://app.crediado.com/app.html#/i/?cuid=2190527c-9459-48c0-a25f-99a9d4608aa6&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Fabiano emprestimo","","- R$ 1.600,00","R$ 0,00","R$ 1.600,00","","16/06/2026","https://app.crediado.com/app.html#/i/?cuid=2286a1d5-c914-4090-8464-81203e22e342&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Carlos shopping telefone","","- R$ 1.235,00","R$ 815,00","R$ 2.050,00","","09/03/2026","https://app.crediado.com/app.html#/i/?cuid=23066117-c68a-4abe-8d98-2f2f73f31536&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Marcia DF 1k","","- R$ 1.575,00","R$ 175,00","R$ 1.750,00","","24/04/2026","https://app.crediado.com/app.html#/i/?cuid=25286369-deb2-4404-bdf3-18771de9da8d&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Eliema emprestimo (2k)","","- R$ 1.750,00","R$ 1.750,00","R$ 3.500,00","","16/01/2026","https://app.crediado.com/app.html#/i/?cuid=261879a9-230f-48c6-8fd2-e7f976fd3955&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Gerson aninha telefone","","- R$ 1.120,00","R$ 480,00","R$ 1.600,00","","28/03/2026","https://app.crediado.com/app.html#/i/?cuid=2624981f-1aaa-4e57-8efa-4988a60c3917&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Nene (Redmi 13c 4/128 )","","- R$ 420,00","R$ 780,00","R$ 1.200,00","","25/04/2024","https://app.crediado.com/app.html#/i/?cuid=26bc23f7-c660-470d-9c3a-c775e4c432a3&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Pedro de Alexandre telefone","","- R$ 2.070,00","R$ 230,00","R$ 2.300,00","","28/05/2026","https://app.crediado.com/app.html#/i/?cuid=285df0d0-08e5-4bcf-8397-e706193d6044&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Paulinha DF Redmi 15c","","- R$ 1.360,00","R$ 340,00","R$ 1.700,00","","28/04/2026","https://app.crediado.com/app.html#/i/?cuid=2a0ed509-2b06-4bfa-9f39-90a21224b5f7&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Mariane emprestimo (2500)","","- R$ 1.960,00","R$ 2.744,00","R$ 4.704,00","","25/12/2025","https://app.crediado.com/app.html#/i/?cuid=2a1c9b4d-7688-4afc-9be6-3c729a4bd06d&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Elinaldo beta ( honor )","","- R$ 400,00","R$ 600,00","R$ 1.000,00","","01/12/2025","https://app.crediado.com/app.html#/i/?cuid=2b0b9ce8-ab1a-4f47-b801-2c13ac65434a&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Nizete projetor","","- R$ 405,00","R$ 0,00","R$ 405,00","","10/06/2026","https://app.crediado.com/app.html#/i/?cuid=2b18f58e-dfab-4745-ab5c-8dca53187562&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Thaisa (empréstimo 1,8k)","","- R$ 2.200,00","R$ 2.200,00","R$ 4.400,00","","26/07/2025","https://app.crediado.com/app.html#/i/?cuid=2cd1e697-3fe3-436f-939b-b265ade6f11f&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Geise painha ( Realme)","","- R$ 175,00","R$ 1.375,00","R$ 1.550,00","","30/06/2025","https://app.crediado.com/app.html#/i/?cuid=2cfe86e1-1944-4f11-8ee3-eb771a2a1bca&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Morgana 2k","","- R$ 3.285,00","R$ 365,00","R$ 3.650,00","","25/05/2026","https://app.crediado.com/app.html#/i/?cuid=2dbd1009-05fa-4b22-aa97-b853d73dbebe&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","valmaria empréstimo 1500","","- R$ 2.750,00","R$ 0,00","R$ 2.750,00","","25/06/2026","https://app.crediado.com/app.html#/i/?cuid=2e32b1bd-f0a2-4baf-90d1-879793d885c5&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Aracele ( oppo a58)","","- R$ 1.280,00","R$ 320,00","R$ 1.600,00","","28/08/2025","https://app.crediado.com/app.html#/i/?cuid=2e824f4e-bb1e-4dc2-9373-cad7570ef5c5&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Sandra tv Samsung 32","","- R$ 360,00","R$ 1.440,00","R$ 1.800,00","","04/11/2025","https://app.crediado.com/app.html#/i/?cuid=30b6521d-5f94-4fed-b238-fa3d28ff7d2f&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Daniela Mãe empréstimo","","- R$ 176,00","R$ 704,00","R$ 880,00","","13/02/2026","https://app.crediado.com/app.html#/i/?cuid=3158dd5e-bba2-4d1e-acb2-d6a04d6674d1&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","socorro Deise","","- R$ 960,00","R$ 240,00","R$ 1.200,00","","08/04/2026","https://app.crediado.com/app.html#/i/?cuid=33549ddb-11ed-435e-bf80-807539ba5630&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Vania coqueiral 5k","","- R$ 5.244,00","R$ 3.496,00","R$ 8.740,00","","21/02/2026","https://app.crediado.com/app.html#/i/?cuid=363ab43e-e8b3-49f1-969b-bfa76f8a2631&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","heleonora FV emprestimo","","- R$ 2.530,00","R$ 3.670,00","R$ 6.200,00","","27/11/2025","https://app.crediado.com/app.html#/i/?cuid=37b0d9d6-22ed-4a6e-889a-66c4ea3a0067&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Cristiane academia(13c)","","- R$ 118,00","R$ 1.382,00","R$ 1.500,00","","20/08/2024","https://app.crediado.com/app.html#/i/?cuid=3817c2a9-1390-4d6e-89e2-fbedc9fd99ae&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Cícera DF tv 32","","- R$ 668,00","R$ 1.002,00","R$ 1.670,00","","02/02/2026","https://app.crediado.com/app.html#/i/?cuid=383ec59a-e2bc-4918-a70e-00ce5f035b29&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","marlene Macedo ( empréstimo 1k)","","- R$ 450,00","R$ 1.500,00","R$ 1.950,00","","12/08/2025","https://app.crediado.com/app.html#/i/?cuid=39e1f11e-94a5-49c0-9432-c358871d1d7b&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Barbara telefone 24GB filha","","- R$ 300,00","R$ 1.200,00","R$ 1.500,00","","15/11/2025","https://app.crediado.com/app.html#/i/?cuid=39f14602-20fb-4657-b44c-89ae84220693&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Marciano funcionário","","- R$ 1.125,00","R$ 125,00","R$ 1.250,00","","27/05/2026","https://app.crediado.com/app.html#/i/?cuid=3ae47305-1dc6-40ae-8bc4-a964c51899d7&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Marciano 3k","","- R$ 2.100,00","R$ 2.100,00","R$ 4.200,00","","24/04/2026","https://app.crediado.com/app.html#/i/?cuid=3b603029-ef15-4fcb-ae62-c975cd91b0c0&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"],
+    ["MwIJL5H22oVmQDyEh4VXYd3QAab2","Daniela marido 2k","","- R$ 3.575,00","R$ 325,00","R$ 3.900,00","","25/06/2026","https://app.crediado.com/app.html#/i/?cuid=3c6d9ab7-a9b3-4e72-89db-560c097ac402&buid=10d02a02-2ea3-4c51-9c20-6e9ece57d9a6"]  ];
 
-        // ============================================================
-        // ELEMENTOS
-        // ============================================================
-        const inputValor     = document.getElementById('valor');
-        const aviso          = document.getElementById('aviso');
-        const listaParcelas  = document.getElementById('listaParcelas');
-        const barraWhatsapp  = document.getElementById('barraWhatsapp');
-        const barraConteudo  = document.getElementById('barraConteudo');
-        const barraTitulo    = document.getElementById('barraTitulo');
-        const barraSubtitulo = document.getElementById('barraSubtitulo');
-        const fecharBarra    = document.getElementById('fecharBarra');
+/* ---------- utilidades ---------- */
+function parseMoney(s){if(!s)return 0;const neg=String(s).trim().startsWith("-");
+  const d=String(s).replace(/[^\d,]/g,"").replace(/\./g,"").replace(",",".");
+  const n=parseFloat(d)||0;return neg?-n:n;}
+function parseDate(s){const[d,m,y]=(s||"").split("/").map(Number);return(y||0)*10000+(m||0)*100+(d||0);}
+function keyFor(r,i){const m=(r[8]||"").match(/cuid=([0-9a-f-]+)/i);return m?m[1]:("idx-"+i);}
+function parseDateBR(s){if(!s)return null;const[d,m,y]=String(s).split("/").map(Number);
+  if(!d||!m||!y)return null;const dt=new Date(y,m-1,d);return isNaN(dt.getTime())?null:dt;}
+function hojeMeiaNoite(){const d=new Date();return new Date(d.getFullYear(),d.getMonth(),d.getDate());}
+function mesmoDia(a,b){return a&&b&&a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();}
+function fmtR$(v){return "R$ "+(Number(v)||0).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});}
+async function sha256(t){const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(t));
+  return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,"0")).join("");}
+function el(id){return document.getElementById(id);}
 
-        let selecionada = null;
-        let dadosCalculados = {};
+/* ---------- Supabase ---------- */
+let supa=null,supaFonte=null;
+try{supa=window.supabase.createClient(CONFIG.SUPABASE_URL,CONFIG.SUPABASE_KEY);}catch(e){}
+try{supaFonte=window.supabase.createClient(CONFIG.FONTE_URL,CONFIG.FONTE_KEY);}catch(e){}
 
-        const checkSVG = `<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="#1a1a2e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="3.5 8.5 6.5 11.5 12.5 4.5"/></svg>`;
+/* ---------- fonte: base do Gerente ---------- */
+function normEntry(raw){
+  if(raw==null)return{pagos:[],parcelas:0,vencimentos:[],datasPagas:[]};
+  if(typeof raw==="number")return{pagos:raw>0?[{valor:raw}]:[],parcelas:0,vencimentos:[],datasPagas:[]};
+  return{pagos:Array.isArray(raw.pagos)?raw.pagos:[],parcelas:Number(raw.parcelas)||0,
+    vencimentos:Array.isArray(raw.vencimentos)?raw.vencimentos:[],
+    datasPagas:Array.isArray(raw.datasPagas)?raw.datasPagas:[]};
+}
+function unwrap(p){
+  if(!p||typeof p!=="object")return{pagamentos:{},vendas:[],nomes:{},excluidos:[]};
+  if(p.pagamentos||p.vendas||p.nomes||p.excluidos||p.lixeira||p.empresa){
+    return{pagamentos:p.pagamentos||{},vendas:Array.isArray(p.vendas)?p.vendas:[],
+      nomes:p.nomes||{},excluidos:Array.isArray(p.excluidos)?p.excluidos:[]};
+  }
+  return{pagamentos:p,vendas:[],nomes:{},excluidos:[]};
+}
+const baseRAW=RAW.map((r,i)=>({key:keyFor(r,i),nome:r[1]||"—",
+  saldoOrig:Math.abs(parseMoney(r[3])),recebidoOrig:parseMoney(r[4]),total:parseMoney(r[5])}));
 
-        // ============================================================
-        // HELPERS
-        // ============================================================
-        function mostrarAviso(msg) { aviso.textContent = msg; aviso.classList.add('visivel'); }
-        function ocultarAviso()   { aviso.classList.remove('visivel'); aviso.textContent = ''; }
-        function esconderBarra()  { barraWhatsapp.classList.remove('visivel'); selecionada = null; }
+let fonte=null; // {base:[fichas NP + vendas KV], pagamentos:{}}
+async function carregarFonte(){
+  const{data,error}=await supaFonte.from(CONFIG.TABLE_FONTE).select("payload").eq("id",CONFIG.ROW_ID).maybeSingle();
+  if(error)throw new Error("Erro ao ler a base: "+error.message);
+  const u=unwrap(data?data.payload:null);
+  const excl=new Set(u.excluidos);
+  const vendas=u.vendas.map(v=>({key:v.id,nome:v.nome||"—",saldoOrig:Number(v.venda)||0,recebidoOrig:0,total:Number(v.venda)||0}));
+  let base=baseRAW.concat(vendas).filter(f=>!excl.has(f.key))
+    .map(f=>u.nomes[f.key]?{...f,nome:u.nomes[f.key]}:f)
+    .map(f=>({...f,origem:"np"}));
+  // ---- Karvore (livro_caixa) ----
+  try{
+    const{data:lk,error:e2}=await supaFonte.from("livro_caixa").select("payload").eq("id",1).maybeSingle();
+    if(!e2&&lk&&lk.payload&&Array.isArray(lk.payload.sales)){
+      const kv=lk.payload.sales.map(s=>({
+        key:"KV:"+s.id,origem:"kv",sale:s,
+        nome:(s.client?s.client:"Cliente")+(s.product?(" · "+s.product):""),
+        total:Number(s.sale)||0}));
+      base=base.concat(kv);
+    }
+  }catch(e){console.warn("Karvore indisponível:",e);}
+  fonte={base,pagamentos:u.pagamentos};
+}
+/* ---- fichas do Karvore: installments {n,value,due,credit,payments[],paid} ---- */
+function isoParaBR(iso){if(!iso)return"";const p=iso.slice(0,10).split("-");return p.length===3?(p[2]+"/"+p[1]+"/"+p[0]):iso;}
+function computeFichaKV(b){
+  const s=b.sale;const insts=Array.isArray(s.installments)?s.installments:[];
+  const hoje=hojeMeiaNoite();
+  let recebido=0;const parcs=[];let proxData="",proxValor=0;
+  insts.forEach((inst,i)=>{
+    const valor=Number(inst.value)||0;
+    const pagos=(Array.isArray(inst.payments)?inst.payments:[]).reduce((t,p)=>t+(Number(p.value)||0),0);
+    const coberto=Math.min(valor,pagos+(Number(inst.credit)||0));
+    recebido+=coberto;
+    const falta=Math.max(0,valor-coberto);
+    const ds=isoParaBR(inst.due);const dt=parseDateBR(ds);
+    let st;
+    if(falta<=0.005)st="paga";
+    else if(coberto>0.005)st="parcial";
+    else st="aberta";
+    if(st!=="paga"&&dt&&dt<hoje&&!mesmoDia(dt,hoje))st=(st==="parcial")?"parcial-vencida":"vencida";
+    if(falta>0.005&&dt&&dt>=hoje&&!proxData){proxData=ds;proxValor=falta;}
+    let pagoEm="";
+    const ps=Array.isArray(inst.payments)?inst.payments:[];
+    if(st==="paga"&&ps.length)pagoEm=isoParaBR(ps[ps.length-1].date||"");
+    parcs.push({n:inst.n||i+1,venc:ds,valor,falta,status:st,pagoEm});
+  });
+  const total=b.total||recebido;
+  return{key:b.key,nome:b.nome,total,recebido:Math.min(recebido,total),
+    saldo:Math.max(0,total-recebido),parcelas:parcs,proxData,proxValor,
+    semParcelas:insts.length===0};
+}
 
-        // ============================================================
-        // CÁLCULO — regra: 1x sempre visível (mínimo R$ 50),
-        //                  2x–21x só se parcela >= R$ 100
-        // ============================================================
-        function calcular() {
-            const valor = parseFloat(inputValor.value);
+/* mesma lógica do Gerente: parcelas sequenciais + datas congeladas */
+function computeFicha(b){
+  const e=normEntry(fonte.pagamentos[b.key]);
+  const extra=e.pagos.reduce((s,p)=>s+(Number(p.valor)||0),0);
+  let recebido=b.recebidoOrig+extra;
+  let saldo=Math.max(0,b.saldoOrig-extra);
+  if(recebido>b.total)recebido=b.total;
+  const parcelasTotal=e.parcelas||0;
+  const valorParcela=parcelasTotal>0?(b.total/parcelasTotal):0;
+  const hoje=hojeMeiaNoite();
+  const parcs=[];let restante=recebido;let proxData="",proxValor=0;
+  for(let i=0;i<parcelasTotal;i++){
+    const ds=e.vencimentos[i]||"";const dt=parseDateBR(ds);
+    const pagoNesta=Math.min(valorParcela,Math.max(0,restante));restante-=pagoNesta;
+    const falta=Math.max(0,valorParcela-pagoNesta);
+    let st;
+    if(falta<=0.005)st="paga";
+    else if(pagoNesta>0.005)st="parcial";
+    else st="aberta";
+    if(st!=="paga"&&dt&&dt<hoje&&!mesmoDia(dt,hoje))st=(st==="parcial")?"parcial-vencida":"vencida";
+    if(falta>0.005&&dt&&dt>=hoje&&!proxData){proxData=ds;proxValor=falta;}
+    parcs.push({n:i+1,venc:ds,valor:valorParcela,falta,status:st,pagoEm:e.datasPagas[i]||""});
+  }
+  return{key:b.key,nome:b.nome,total:b.total,recebido,saldo,parcelas:parcs,proxData,proxValor,
+    semParcelas:parcelasTotal===0};
+}
 
-            if (isNaN(valor) || valor < 50) {
-                if (!isNaN(valor) && valor > 0 && valor < 50) {
-                    mostrarAviso('O valor mínimo é R$ 50,00.');
-                } else if (isNaN(valor) || valor <= 0) {
-                    mostrarAviso('Informe um valor válido (mínimo R$ 50,00).');
-                }
-                listaParcelas.innerHTML = '';
-                esconderBarra();
-                return;
-            }
+/* ---------- portal: contas na nuvem ---------- */
+async function getConta(login){
+  const{data,error}=await supa.from(CONFIG.TABLE_PORTAL).select("login,payload").eq("login",login).maybeSingle();
+  if(error)throw new Error(error.message);return data;
+}
+async function upsertConta(login,payload){
+  const{error}=await supa.from(CONFIG.TABLE_PORTAL).upsert({login,payload});
+  if(error)throw new Error(error.message);
+}
+async function listarContas(){
+  const{data,error}=await supa.from(CONFIG.TABLE_PORTAL).select("login,payload");
+  if(error)throw new Error(error.message);
+  return (data||[]).filter(r=>r.login!=="__config");
+}
+let cfg={senhaHash:"",pix:CONFIG.PIX_PADRAO,zap:CONFIG.ZAP_PADRAO};
+async function carregarCfg(){
+  const row=await getConta("__config").catch(()=>null);
+  if(row&&row.payload){cfg={...cfg,...row.payload};}
+  if(!cfg.senhaHash)cfg.senhaHash=await sha256(CONFIG.SENHA_ADMIN_PADRAO);
+}
+async function salvarCfg(){await upsertConta("__config",cfg);}
 
-            ocultarAviso();
-            dadosCalculados = {};
+/* ---------- publicar extratos ---------- */
+function montarExtrato(keys){
+  const map={};fonte.base.forEach(b=>map[b.key]=b);
+  const clientes=keys.filter(k=>map[k]).map(k=>{const b=map[k];return b.origem==="kv"?computeFichaKV(b):computeFicha(b);});
+  return{clientes,atualizado:new Date().toISOString()};
+}
+async function publicarTudo(){
+  const contas=await listarContas();
+  for(const c of contas){
+    const p=c.payload||{};
+    p.extrato=montarExtrato(p.keys||[]);
+    await upsertConta(c.login,p);
+  }
+  return contas.length;
+}
 
-            let html = '';
+/* ---------- login ---------- */
+async function entrar(){
+  const login=el("inLogin").value.trim().toLowerCase();
+  const senha=el("inSenha").value;
+  el("loginErr").textContent="";
+  if(!login||!senha){el("loginErr").textContent="Preencha login e senha.";return;}
+  try{
+    const h=await sha256(senha);
+    if(login===CONFIG.ADMIN_LOGIN){
+      await carregarCfg();
+      if(h!==cfg.senhaHash){el("loginErr").textContent="Senha incorreta.";return;}
+      abrirAdmin();return;
+    }
+    const row=await getConta(login);
+    if(!row||!row.payload||row.payload.senha!==h){el("loginErr").textContent="Login ou senha incorretos.";return;}
+    await carregarCfg();
+    abrirCliente(login,row.payload);
+  }catch(e){el("loginErr").textContent="Erro de conexão: "+e.message;}
+}
 
-            for (let qtd = 1; qtd <= 21; qtd++) {
-                const total1          = valor * taxasPrimeiro[qtd];
-                const totalFinalBruto = total1 * taxasSegundo[qtd];
-                const totalFinal      = arredondarRegraNova(totalFinalBruto);
-                const parcelaBruta    = totalFinal / qtd;
-                const parcela         = arredondarRegraNova(parcelaBruta);
+function mostrar(view){
+  ["viewLogin","viewAdmin","viewCliente"].forEach(v=>el(v).classList.add("hide"));
+  el(view).classList.remove("hide");
+  el("topBtns").classList.toggle("hide",view==="viewLogin");
+  el("btnRefresh").classList.toggle("hide",view!=="viewCliente");
+}
 
-                // Regra de visibilidade:
-                // - 1x: SEMPRE visível (garantido pelo mínimo de R$ 50)
-                // - 2x a 21x: só se parcela >= 100
-                if (qtd >= 2 && parcela < 100) continue;
+/* ---------- ADMIN ---------- */
+let contasCache=[];
+async function abrirAdmin(){
+  mostrar("viewAdmin");
+  el("subtitle").textContent="Painel do administrador";
+  el("syncBadge").textContent="Sincronizando com a base do Gerente…";
+  try{
+    await carregarFonte();
+    const n=await publicarTudo();
+    el("syncBadge").textContent="Base carregada · "+fonte.base.length+" clientes · "+n+" conta(s) republicada(s) · "+new Date().toLocaleTimeString("pt-BR");
+  }catch(e){el("syncBadge").textContent="Falha ao sincronizar: "+e.message;}
+  el("cfgZap").value=cfg.zap||"";
+  await renderContas();
+}
+async function renderContas(){
+  try{contasCache=await listarContas();}catch(e){el("listaContas").innerHTML='<p class="err">'+e.message+'</p>';return;}
+  if(!contasCache.length){el("listaContas").innerHTML='<p class="sub">Nenhuma conta criada ainda. Toque em “+ Nova conta”.</p>';return;}
+  el("listaContas").innerHTML="";
+  contasCache.sort((a,b)=>a.login.localeCompare(b.login)).forEach(c=>{
+    const nomes=(c.payload&&c.payload.keys||[]).length;
+    const div=document.createElement("div");div.className="acc-row";
+    div.innerHTML='<div><div class="nm">'+c.login+'</div><div class="meta">'+nomes+' cliente(s) associado(s)</div></div>'+
+      '<div style="display:flex;gap:.4rem"><button class="btn btn-sm btn-ghost" data-ed="'+c.login+'">Editar</button>'+
+      '<button class="btn btn-sm btn-danger" data-del="'+c.login+'">Excluir</button></div>';
+    el("listaContas").appendChild(div);
+  });
+  el("listaContas").querySelectorAll("[data-ed]").forEach(b=>b.onclick=()=>abrirModalConta(b.dataset.ed));
+  el("listaContas").querySelectorAll("[data-del]").forEach(b=>b.onclick=async()=>{
+    if(!confirm('Excluir a conta "'+b.dataset.del+'"? O cliente perde o acesso.'))return;
+    await supa.from(CONFIG.TABLE_PORTAL).delete().eq("login",b.dataset.del);
+    renderContas();
+  });
+}
 
-                const labelParcela = qtd === 1 ? 'à vista' : 'vezes';
-                dadosCalculados[qtd] = { parcela, totalFinal };
+/* modal conta */
+let editandoLogin=null;
+function abrirModalConta(login){
+  editandoLogin=login||null;
+  el("mContaTitulo").textContent=login?("Editar conta: "+login):"Nova conta";
+  el("mLogin").value=login||"";el("mLogin").disabled=!!login;
+  el("mSenha").value="";el("mErr").textContent="";el("mBusca").value="";
+  const sel=new Set(login?((contasCache.find(c=>c.login===login)||{}).payload||{}).keys||[]:[]);
+  renderPick(sel,"");
+  el("mBusca").oninput=()=>renderPick(sel,el("mBusca").value);
+  el("ovConta").classList.remove("hide");
+  el("mSalvar").onclick=()=>salvarConta(sel);
+}
+function renderPick(sel,q){
+  const qq=q.trim().toLowerCase();
+  const lista=fonte?fonte.base.slice().sort((a,b)=>a.nome.localeCompare(b.nome)):[];
+  el("mLista").innerHTML="";
+  lista.filter(b=>!qq||b.nome.toLowerCase().includes(qq)).slice(0,400).forEach(b=>{
+    const lb=document.createElement("label");
+    const ck=document.createElement("input");ck.type="checkbox";ck.checked=sel.has(b.key);
+    ck.onchange=()=>{ck.checked?sel.add(b.key):sel.delete(b.key);};
+    lb.appendChild(ck);
+    const bd=document.createElement("span");bd.className="badge-src "+(b.origem==="kv"?"kv":"np");
+    bd.textContent=b.origem==="kv"?"KV":"NP";lb.appendChild(bd);
+    lb.appendChild(document.createTextNode(b.nome));
+    el("mLista").appendChild(lb);
+  });
+  if(!el("mLista").children.length)el("mLista").innerHTML='<p class="sub" style="padding:.4rem 0">Nenhum cliente encontrado.</p>';
+}
+async function salvarConta(sel){
+  const login=el("mLogin").value.trim().toLowerCase().replace(/\s+/g,"");
+  const senha=el("mSenha").value;
+  el("mErr").textContent="";
+  if(!login){el("mErr").textContent="Informe o login.";return;}
+  if(login===CONFIG.ADMIN_LOGIN||login==="__config"){el("mErr").textContent="Esse login é reservado.";return;}
+  if(!editandoLogin&&!senha){el("mErr").textContent="Informe a senha da nova conta.";return;}
+  if(!sel.size){el("mErr").textContent="Associe pelo menos um cliente.";return;}
+  try{
+    if(!editandoLogin){
+      const ja=await getConta(login);
+      if(ja){el("mErr").textContent="Já existe conta com esse login.";return;}
+    }
+    const antigo=editandoLogin?((contasCache.find(c=>c.login===editandoLogin)||{}).payload||{}):{};
+    const p={...antigo,keys:Array.from(sel)};
+    if(senha)p.senha=await sha256(senha);
+    p.extrato=montarExtrato(p.keys);
+    await upsertConta(login,p);
+    el("ovConta").classList.add("hide");
+    renderContas();
+  }catch(e){el("mErr").textContent=e.message;}
+}
 
-                html += `
-                    <li class="linha-parcela" data-qtd="${qtd}" role="button" tabindex="0"
-                        aria-label="${qtd}x de R$ ${formatar(parcela)}, total R$ ${formatar(totalFinal)}">
-                        <div class="lado-esquerdo">
-                            <span class="badge">${qtd}x</span>
-                            <span class="label-parcela">${labelParcela}</span>
-                        </div>
-                        <div class="lado-direito">
-                            <div class="valores">
-                                <span class="valor-parcela">R$ ${formatar(parcela)}</span>
-                                <span class="valor-total-linha">total R$ ${formatar(totalFinal)}</span>
-                            </div>
-                            <div class="check-indicator">${checkSVG}</div>
-                        </div>
-                    </li>`;
-            }
+/* ---------- CLIENTE ---------- */
+let cli={login:"",extrato:null,idx:0};
+function abrirCliente(login,payload){
+  mostrar("viewCliente");
+  el("subtitle").textContent="Portal do cliente";
+  cli={login,extrato:payload.extrato||{clientes:[]},idx:0};
+  renderCliente();
+}
+function renderCliente(){
+  const ex=cli.extrato;const cs=ex.clientes||[];
+  el("cliOla").textContent="Olá!";
+  el("cliAtualizado").textContent=ex.atualizado?("Atualizado em "+new Date(ex.atualizado).toLocaleString("pt-BR")):"";
+  const chips=el("cliChips");
+  if(cs.length>1){
+    chips.classList.remove("hide");chips.innerHTML="";
+    cs.forEach((c,i)=>{const b=document.createElement("button");
+      if(i===cli.idx)b.classList.add("on");
+      const pago=Math.max(0,(c.total||0)-(c.saldo||0));
+      const pct=c.total>0?Math.min(100,Math.round(pago/c.total*100)):0;
+      const quitado=(c.saldo||0)<=0.005;
+      const atraso=!quitado&&(c.parcelas||[]).some(p=>p.status==="vencida"||p.status==="parcial-vencida");
+      b.innerHTML='<span class="chip-nome"></span><span class="chip-bar'+(atraso?' late':'')+'"><i style="width:'+(quitado?100:pct)+'%"></i></span>';
+      b.querySelector(".chip-nome").textContent=c.nome;
+      b.onclick=()=>{cli.idx=i;renderCliente();};chips.appendChild(b);});
+  }else chips.classList.add("hide");
+  const c=cs[cli.idx];
+  if(!c){el("kSaldo").textContent="—";el("kProx").textContent="—";
+    el("cliBarra").querySelector("i").style.width="0%";el("cliBarraLb").innerHTML="";
+    el("cliParcelas").innerHTML='<p class="sub">Nenhuma informação disponível ainda. Fale com a loja.</p>';return;}
+  el("cliTituloParcelas").textContent="Parcelas · "+c.nome;
+  {const pago=Math.max(0,c.total-c.saldo);
+   const pct=c.total>0?Math.min(100,Math.round(pago/c.total*100)):0;
+   const quitado=c.saldo<=0.005;
+   const temAtraso=!quitado&&(c.parcelas||[]).some(p=>p.status==="vencida"||p.status==="parcial-vencida");
+   const barra=el("cliBarra");
+   barra.classList.toggle("late",temAtraso);
+   barra.querySelector("i").style.width=(quitado?100:pct)+"%";
+   el("cliBarraLb").innerHTML=quitado
+     ?'<span><b>Conta quitada 🎉</b></span><span>100%</span>'
+     :'<span>Pago: <b>'+fmtR$(pago)+'</b> de '+fmtR$(c.total)+'</span><span><b>'+pct+'%</b></span>';}
+  el("kSaldo").textContent=fmtR$(c.saldo);
+  el("kProx").textContent=c.proxData?(c.proxData.slice(0,5)+" · "+fmtR$(c.proxValor)):(c.saldo<=0.005?"Quitado 🎉":"—");
+  const box=el("cliParcelas");box.innerHTML="";
+  if(c.semParcelas||!c.parcelas.length){
+    box.innerHTML='<p class="sub">Saldo em aberto: <b>'+fmtR$(c.saldo)+'</b> de '+fmtR$(c.total)+
+      '. As parcelas ainda não foram geradas — fale com a loja para combinar as datas.</p>';
+    if(c.saldo>0.005)box.appendChild(botaoPagar("o valor combinado",""));
+    return;
+  }
+  c.parcelas.forEach(p=>{
+    const div=document.createElement("div");div.className="parc";
+    let tag,txt;
+    if(p.status==="paga"){tag="paga";txt=p.pagoEm?("Pago em "+p.pagoEm.slice(0,5)):"Pago";}
+    else if(p.status==="parcial"||p.status==="parcial-vencida"){tag=p.status==="parcial-vencida"?"vencida":"parcial";txt="Falta "+fmtR$(p.falta);}
+    else if(p.status==="vencida"){tag="vencida";txt="Venceu "+(p.venc?p.venc.slice(0,5):"");}
+    else{tag="aberta";txt=p.venc?("Vence "+p.venc.slice(0,5)):"Em aberto";}
+    div.innerHTML='<div><div class="pn">Parcela '+p.n+' · '+fmtR$(p.valor)+'</div><div class="pd">'+txt+'</div></div>';
+    const right=document.createElement("div");right.style.display="flex";right.style.gap=".5rem";right.style.alignItems="center";
+    const t=document.createElement("span");t.className="tag "+tag;
+    t.textContent={paga:"Paga",aberta:"Em aberto",parcial:"Parcial",vencida:"Vencida"}[tag];
+    right.appendChild(t);
+    if(p.status!=="paga"){const bt=document.createElement("button");bt.className="btn btn-sm";bt.textContent="Pagar";
+      bt.onclick=()=>abrirPagar(p);right.appendChild(bt);}
+    div.appendChild(right);box.appendChild(div);
+  });
+}
+function botaoPagar(desc){
+  const bt=document.createElement("button");bt.className="btn btn-sm";bt.style.marginTop=".6rem";
+  bt.textContent="Como pagar";bt.onclick=()=>abrirPagar(null);return bt;
+}
+function abrirPagar(p){
+  el("pgTitulo").textContent=p?("Pagar parcela "+p.n+" · "+fmtR$(p.falta||p.valor)):"Como pagar";
+  const msg=encodeURIComponent("Olá! Quero combinar o pagamento"+(p?(" da parcela "+p.n):"")+" (login: "+cli.login+").");
+  el("pgZap").onclick=()=>window.open("https://wa.me/"+(cfg.zap||CONFIG.ZAP_PADRAO)+"?text="+msg,"_blank");
+  el("ovPagar").classList.remove("hide");
+}
+async function atualizarCliente(){
+  try{const row=await getConta(cli.login);
+    if(row&&row.payload){cli.extrato=row.payload.extrato||cli.extrato;renderCliente();}
+  }catch(e){}
+}
 
-            listaParcelas.innerHTML = html;
+/* ---------- config admin ---------- */
+async function salvarSenhaAdmin(){
+  el("cfgSenhaErr").textContent="";el("cfgSenhaOk").textContent="";
+  const at=el("cfgSenhaAtual").value,nv=el("cfgSenhaNova").value,cf=el("cfgSenhaConf").value;
+  if(await sha256(at)!==cfg.senhaHash){el("cfgSenhaErr").textContent="Senha atual incorreta.";return;}
+  if(!nv||nv.length<4){el("cfgSenhaErr").textContent="A nova senha precisa ter pelo menos 4 caracteres.";return;}
+  if(nv!==cf){el("cfgSenhaErr").textContent="A confirmação não confere.";return;}
+  cfg.senhaHash=await sha256(nv);
+  try{await salvarCfg();el("cfgSenhaOk").textContent="Senha alterada com sucesso.";
+    el("cfgSenhaAtual").value=el("cfgSenhaNova").value=el("cfgSenhaConf").value="";
+  }catch(e){el("cfgSenhaErr").textContent="Erro ao salvar: "+e.message;}
+}
+async function salvarPag(){
+  cfg.zap=el("cfgZap").value.replace(/\D/g,"");
+  try{await salvarCfg();el("cfgPagOk").textContent="Salvo.";setTimeout(()=>el("cfgPagOk").textContent="",2500);}catch(e){alert(e.message);}
+}
 
-            // Restaurar seleção se ainda válida
-            if (selecionada && dadosCalculados[selecionada]) {
-                const linha = listaParcelas.querySelector(`[data-qtd="${selecionada}"]`);
-                if (linha) { linha.classList.add('selecionada'); atualizarBarra(selecionada); }
-            } else {
-                esconderBarra();
-            }
-
-            // Eventos nas linhas
-            listaParcelas.querySelectorAll('.linha-parcela[data-qtd]').forEach(linha => {
-                linha.addEventListener('click', () => selecionarParcela(linha));
-                linha.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selecionarParcela(linha); }
-                });
-            });
-        }
-
-        // ============================================================
-        // SELEÇÃO
-        // ============================================================
-        function selecionarParcela(linha) {
-            const qtd = parseInt(linha.dataset.qtd);
-
-            if (selecionada === qtd) {
-                linha.classList.remove('selecionada');
-                esconderBarra();
-                return;
-            }
-
-            const anterior = listaParcelas.querySelector('.linha-parcela.selecionada');
-            if (anterior) anterior.classList.remove('selecionada');
-
-            linha.classList.add('selecionada');
-            selecionada = qtd;
-            atualizarBarra(qtd);
-            if (navigator.vibrate) navigator.vibrate(10);
-        }
-
-        // ============================================================
-        // BARRA WHATSAPP
-        // ============================================================
-        function atualizarBarra(qtd) {
-            const dados = dadosCalculados[qtd];
-            if (!dados) return;
-            const label = qtd === 1 ? 'à vista' : `${qtd}x de R$ ${formatar(dados.parcela)}`;
-            barraTitulo.textContent = label;
-            barraSubtitulo.textContent = `Total: R$ ${formatar(dados.totalFinal)} · toque para enviar`;
-            barraWhatsapp.classList.add('visivel');
-        }
-
-        function enviarWhatsApp() {
-            if (!selecionada || !dadosCalculados[selecionada]) return;
-            const dados = dadosCalculados[selecionada];
-            const valor = parseFloat(inputValor.value);
-            const label = selecionada === 1 ? 'à vista' : `${selecionada}x de R$ ${formatar(dados.parcela)}`;
-            const mensagem = [
-                `*Simulador de Parcelas*`, ``,
-                `Valor: *R$ ${formatar(valor)}*`,
-                `Parcelamento: *${label}*`,
-                `Total com taxas: *R$ ${formatar(dados.totalFinal)}*`,
-                ``, `Venha conferir! 🛒`
-            ].join('\n');
-            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(mensagem)}`, '_blank');
-        }
-
-        barraConteudo.addEventListener('click', (e) => { if (!e.target.closest('.botao-fechar-barra')) enviarWhatsApp(); });
-
-        fecharBarra.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const linha = listaParcelas.querySelector('.linha-parcela.selecionada');
-            if (linha) linha.classList.remove('selecionada');
-            esconderBarra();
-        });
-
-        // ============================================================
-        // DEBOUNCE + BLOQUEIO
-        // ============================================================
-        let timer;
-        function calcularComDebounce() { clearTimeout(timer); timer = setTimeout(calcular, 250); }
-
-        inputValor.addEventListener('input', calcularComDebounce);
-        inputValor.addEventListener('keydown', (e) => { if (e.key === '-' || e.key === 'e' || e.key === 'E') e.preventDefault(); });
-
-        calcular();
-    </script>
+/* ---------- eventos ---------- */
+el("btnEntrar").onclick=entrar;
+el("inSenha").addEventListener("keydown",e=>{if(e.key==="Enter")entrar();});
+el("btnSair").onclick=()=>{cli={login:"",extrato:null,idx:0};el("inLogin").value=el("inSenha").value="";mostrar("viewLogin");el("subtitle").textContent="Portal do cliente";};
+el("btnRefresh").onclick=atualizarCliente;
+el("btnNovaConta").onclick=()=>abrirModalConta(null);
+el("mCancelar").onclick=()=>el("ovConta").classList.add("hide");
+el("pgFechar").onclick=()=>el("ovPagar").classList.add("hide");
+el("btnSync").onclick=abrirAdmin;
+el("btnSalvarSenha").onclick=salvarSenhaAdmin;
+el("btnSalvarPag").onclick=salvarPag;
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll(".tabs button").forEach(x=>x.classList.remove("on"));b.classList.add("on");
+  el("tabContas").classList.toggle("hide",b.dataset.tab!=="contas");
+  el("tabConfig").classList.toggle("hide",b.dataset.tab!=="config");
+});
+</script>
 </body>
 </html>
