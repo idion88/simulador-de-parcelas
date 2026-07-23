@@ -153,6 +153,7 @@ label{display:block;font-size:.78rem;font-weight:600;margin:.7rem 0 .35rem;color
         <div class="card">
           <h3>Pagamento</h3>
           <label>WhatsApp para comprovantes (só números, com 55)</label><input id="cfgZap">
+          <label>Link do portal (usado no “Copiar dados”)</label><input id="cfgLink" placeholder="https://seusite.github.io/portal.html">
           <div style="margin-top:.9rem"><button class="btn btn-sm" id="btnSalvarPag">Salvar</button></div>
           <div class="ok-msg" id="cfgPagOk"></div>
         </div>
@@ -708,7 +709,7 @@ async function abrirAdmin(){
     const n=await publicarTudo();
     el("syncBadge").textContent="Base carregada · "+fonte.base.length+" clientes · "+n+" conta(s) republicada(s) · "+new Date().toLocaleTimeString("pt-BR");
   }catch(e){el("syncBadge").textContent="Falha ao sincronizar: "+e.message;}
-  el("cfgZap").value=cfg.zap||"";
+  el("cfgZap").value=cfg.zap||"";el("cfgLink").value=cfg.link||"";
   await renderContas();
 }
 async function renderContas(){
@@ -719,10 +720,12 @@ async function renderContas(){
     const nomes=(c.payload&&c.payload.keys||[]).length;
     const div=document.createElement("div");div.className="acc-row";
     div.innerHTML='<div><div class="nm">'+c.login+'</div><div class="meta">'+nomes+' cliente(s) associado(s)</div></div>'+
-      '<div style="display:flex;gap:.4rem"><button class="btn btn-sm btn-ghost" data-ed="'+c.login+'">Editar</button>'+
+      '<div style="display:flex;gap:.4rem"><button class="btn btn-sm" data-cp="'+c.login+'">Copiar dados</button>'+
+      '<button class="btn btn-sm btn-ghost" data-ed="'+c.login+'">Editar</button>'+
       '<button class="btn btn-sm btn-danger" data-del="'+c.login+'">Excluir</button></div>';
     el("listaContas").appendChild(div);
   });
+  el("listaContas").querySelectorAll("[data-cp]").forEach(b=>b.onclick=()=>copiarDados(b.dataset.cp,b));
   el("listaContas").querySelectorAll("[data-ed]").forEach(b=>b.onclick=()=>abrirModalConta(b.dataset.ed));
   el("listaContas").querySelectorAll("[data-del]").forEach(b=>b.onclick=async()=>{
     if(!confirm('Excluir a conta "'+b.dataset.del+'"? O cliente perde o acesso.'))return;
@@ -775,6 +778,24 @@ function renderPick(sel,q){
   });
   if(!el("mLista").children.length)el("mLista").innerHTML='<p class="sub" style="padding:.4rem 0">Nenhum cliente encontrado.</p>';
 }
+function copiarDados(login,btn){
+  const c=contasCache.find(x=>x.login===login);
+  const senha=(c&&c.payload&&c.payload.senhaTexto)||"";
+  const link=cfg.link||"";
+  let msg="Olá! Segue seu acesso ao portal Nordeste Prime 📱\n\n";
+  msg+="👤 Login: "+login+"\n";
+  msg+=senha?("🔑 Senha: "+senha+"\n"):"🔑 Senha: (defina uma nova senha em Editar para incluir aqui)\n";
+  if(link)msg+="\n🔗 Link para o portal:\n"+link+"\n";
+  msg+="\nLá você acompanha suas parcelas e o quanto já pagou.";
+  const done=()=>{const t=btn.textContent;btn.textContent="Copiado ✔";setTimeout(()=>btn.textContent=t,1600);};
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(msg).then(done).catch(()=>copiarFallback(msg,done));
+  }else copiarFallback(msg,done);
+}
+function copiarFallback(txt,done){
+  const ta=document.createElement("textarea");ta.value=txt;document.body.appendChild(ta);
+  ta.select();try{document.execCommand("copy");done();}catch(e){alert(txt);}document.body.removeChild(ta);
+}
 async function salvarConta(sel){
   const login=el("mLogin").value.trim().toLowerCase().replace(/\s+/g,"");
   const senha=el("mSenha").value;
@@ -790,7 +811,7 @@ async function salvarConta(sel){
     }
     const antigo=editandoLogin?((contasCache.find(c=>c.login===editandoLogin)||{}).payload||{}):{};
     const p={...antigo,keys:Array.from(sel)};
-    if(senha)p.senha=await sha256(senha);
+    if(senha){p.senha=await sha256(senha);p.senhaTexto=senha;}
     p.extrato=montarExtrato(p.keys);
     await upsertConta(login,p);
     el("ovConta").classList.add("hide");
@@ -893,7 +914,7 @@ async function salvarSenhaAdmin(){
   }catch(e){el("cfgSenhaErr").textContent="Erro ao salvar: "+e.message;}
 }
 async function salvarPag(){
-  cfg.zap=el("cfgZap").value.replace(/\D/g,"");
+  cfg.zap=el("cfgZap").value.replace(/\D/g,"");cfg.link=el("cfgLink").value.trim();
   try{await salvarCfg();el("cfgPagOk").textContent="Salvo.";setTimeout(()=>el("cfgPagOk").textContent="",2500);}catch(e){alert(e.message);}
 }
 
