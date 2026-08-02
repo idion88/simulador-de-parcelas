@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simulador de Parcelas</title>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8067475548372084"
-     crossorigin="anonymous"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
@@ -664,6 +662,47 @@
             return v;
         }
 
+        // ============================================================
+        // DURAÇÃO DA NEGOCIAÇÃO (mês = 23 dias corridos)
+        // Conta do envio do dinheiro até a ÚLTIMA parcela.
+        // Meses cheios de calendário + sobra >= 23 dias conta +1 mês.
+        // ============================================================
+        const DIAS_MES = 23;
+
+        function dataLocal(str) {
+            const [a, m, d] = str.split('-').map(Number);
+            return new Date(a, m - 1, d);
+        }
+
+        function somarMeses(data, n) {
+            const d = new Date(data.getTime());
+            const diaOrig = d.getDate();
+            d.setMonth(d.getMonth() + n);
+            if (d.getDate() < diaOrig) d.setDate(0); // corrige fim de mês (31 -> 30/28)
+            return d;
+        }
+
+        function mesesNegociacao(strEnvio, strPrimeira, qtd) {
+            if (!strEnvio || !strPrimeira) return null;
+            const envio = dataLocal(strEnvio);
+            const primeira = dataLocal(strPrimeira);
+            if (isNaN(envio) || isNaN(primeira)) return null;
+
+            // última parcela = primeira + (qtd - 1) meses
+            const ultima = somarMeses(primeira, qtd - 1);
+            if (ultima <= envio) return null;
+
+            // meses cheios de calendário entre envio e última parcela
+            let meses = 0;
+            while (somarMeses(envio, meses + 1) <= ultima) meses++;
+
+            // sobra em dias
+            const sobra = Math.round((ultima - somarMeses(envio, meses)) / 86400000);
+            if (sobra >= DIAS_MES) meses++;
+
+            return meses;
+        }
+
         function formatar(valor) {
             return valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
@@ -721,8 +760,8 @@
             for (let qtd = 1; qtd <= 21; qtd++) {
                 let indiceTaxa = qtd;
                 if (ativarCalendario.checked && dataRecebimento.value && dataPagamento.value) {
-                    const dias = Math.floor((new Date(dataPagamento.value)-new Date(dataRecebimento.value))/86400000);
-                    if (dias > 45) indiceTaxa = Math.min(qtd+1,21);
+                    const m = mesesNegociacao(dataRecebimento.value, dataPagamento.value, qtd);
+                    if (m !== null) indiceTaxa = Math.min(Math.max(m, 1), 21);
                 }
                 const total1 = valor * taxasPrimeiro[indiceTaxa];
                 const totalFinalBruto = total1 * taxasSegundo[indiceTaxa];
