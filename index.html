@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simulador de Parcelas</title>
+
+    <!-- ÍCONES (arquivos na raiz do repositório, junto do index.html) -->
+    <link rel="icon" type="image/png" sizes="512x512" href="favicon.png?v=1">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=1">
+    <link rel="shortcut icon" href="favicon.ico?v=1">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=1">
+    <meta name="theme-color" content="#1f4fa8">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
@@ -332,6 +339,20 @@
             font-weight: 500;
             color: var(--cor-texto-secundario);
             transition: color 0.3s ease;
+        }
+
+        .datas-parcela {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--cor-texto-secundario);
+            opacity: 0.75;
+            white-space: nowrap;
+            transition: color 0.3s ease;
+        }
+
+        .linha-parcela.selecionada .datas-parcela {
+            color: rgba(255,255,255,0.85) !important;
+            opacity: 1;
         }
 
         /* ===== LADO DIREITO ===== */
@@ -703,6 +724,19 @@
             return meses;
         }
 
+        function ddmm(d) {
+            return String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0');
+        }
+
+        // Texto com as datas das parcelas (só quando o cálculo por datas está ativo)
+        function textoDatas(strPrimeira, qtd) {
+            if (!strPrimeira) return '';
+            const primeira = dataLocal(strPrimeira);
+            if (isNaN(primeira)) return '';
+            if (qtd === 1) return ddmm(primeira);
+            return ddmm(primeira) + ' → ' + ddmm(somarMeses(primeira, qtd - 1));
+        }
+
         function formatar(valor) {
             return valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
@@ -778,6 +812,8 @@
 if (qtd >= 2 && parcela < 100) continue;
 
                 const labelParcela = qtd === 1 ? 'à vista' : 'vezes';
+                const datasTexto = (ativarCalendario.checked && dataPagamento.value)
+                    ? textoDatas(dataPagamento.value, qtd) : '';
                 dadosCalculados[qtd] = { parcela, totalFinal: totalExibido };
 
                 html += `
@@ -786,6 +822,7 @@ if (qtd >= 2 && parcela < 100) continue;
                         <div class="lado-esquerdo">
                             <span class="badge">${qtd}x</span>
                             <span class="label-parcela">${labelParcela}</span>
+                            ${datasTexto ? `<span class="datas-parcela">${datasTexto}</span>` : ''}
                         </div>
                         <div class="lado-direito">
                             <div class="valores">
