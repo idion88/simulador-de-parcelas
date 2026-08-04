@@ -12,8 +12,6 @@
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=1">
     <meta name="theme-color" content="#1f4fa8">
 
-    <!-- GOOGLE ADSENSE - verificação de propriedade do site -->
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8067475548372084" crossorigin="anonymous"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
@@ -716,13 +714,12 @@
             const ultima = somarMeses(primeira, qtd - 1);
             if (ultima <= envio) return null;
 
-            // meses cheios de calendário entre envio e última parcela
-            let meses = 0;
-            while (somarMeses(envio, meses + 1) <= ultima) meses++;
+            // total de dias corridos entre envio e última parcela
+            const dias = Math.round((ultima - envio) / 86400000);
 
-            // sobra em dias
-            const sobra = Math.round((ultima - somarMeses(envio, meses)) / 86400000);
-            if (sobra >= DIAS_MES) meses++;
+            // cada bloco completo de 23 dias = 1 mês (mínimo 1)
+            let meses = Math.floor(dias / DIAS_MES);
+            if (meses < 1) meses = 1;
 
             return meses;
         }
