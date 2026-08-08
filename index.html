@@ -685,11 +685,11 @@
         }
 
         // ============================================================
-        // DURAÇÃO DA NEGOCIAÇÃO (mês = 23 dias corridos)
+        // DURAÇÃO DA NEGOCIAÇÃO (mês = 25 dias corridos)
         // Conta do envio do dinheiro até a ÚLTIMA parcela.
-        // Meses cheios de calendário + sobra >= 23 dias conta +1 mês.
+        // Cada bloco de 25 dias (ou fração) conta como +1 mês.
         // ============================================================
-        const DIAS_MES = 23;
+        const DIAS_MES = 25;
 
         function dataLocal(str) {
             const [a, m, d] = str.split('-').map(Number);
@@ -717,11 +717,11 @@
             // total de dias corridos entre envio e última parcela
             const dias = Math.round((ultima - envio) / 86400000);
 
-            // cada bloco completo de 23 dias = 1 mês (mínimo 1)
-            let meses = Math.floor(dias / DIAS_MES);
+            // cada bloco de 25 dias (ou fração) = 1 mês (mínimo 1)
+            let meses = Math.ceil(dias / DIAS_MES);
             if (meses < 1) meses = 1;
 
-            return meses;
+            return { meses, dias };
         }
 
         function ddmm(d) {
@@ -794,8 +794,8 @@
             for (let qtd = 1; qtd <= 21; qtd++) {
                 let indiceTaxa = qtd;
                 if (ativarCalendario.checked && dataRecebimento.value && dataPagamento.value) {
-                    const m = mesesNegociacao(dataRecebimento.value, dataPagamento.value, qtd);
-                    if (m !== null) indiceTaxa = Math.min(Math.max(m, 1), 21);
+                    const r = mesesNegociacao(dataRecebimento.value, dataPagamento.value, qtd);
+                    if (r !== null) indiceTaxa = Math.min(Math.max(r.meses, 1), 21);
                 }
                 const total1 = valor * taxasPrimeiro[indiceTaxa];
                 const totalFinalBruto = total1 * taxasSegundo[indiceTaxa];
