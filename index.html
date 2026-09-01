@@ -666,12 +666,20 @@
         };
 
         const taxasSegundo = {
-            1: 1.15,  2: 1.20,  3: 1.25,  4: 1.30,  5: 1.35,
-            6: 1.40,  7: 1.45,  8: 1.50,  9: 1.55, 10: 1.60,
-            11: 1.65, 12: 1.70, 13: 1.75, 14: 1.85, 15: 1.90,
-            16: 1.95, 17: 2.00, 18: 2.05, 19: 2.10, 20: 2.15,
-            21: 2.20
+            1: 1.18,  2: 1.23,  3: 1.28,  4: 1.33,  5: 1.38,
+            6: 1.43,  7: 1.48,  8: 1.53,  9: 1.58, 10: 1.63,
+            11: 1.68, 12: 1.73, 13: 1.78, 14: 1.83, 15: 1.88,
+            16: 1.93, 17: 1.98, 18: 2.03, 19: 2.08, 20: 2.13,
+            21: 2.18
         };
+
+        // ============================================================
+        // REGRAS DE EXIBIÇÃO
+        // VALOR_MINIMO   -> valor mínimo aceito no campo
+        // PARCELA_MINIMA -> de 2x em diante, só exibe se a parcela for >= este valor
+        // ============================================================
+        const VALOR_MINIMO   = 50;
+        const PARCELA_MINIMA = 50;
 
         // ============================================================
         // ARREDONDAMENTO
@@ -775,11 +783,11 @@
         function calcular() {
             const valor = parseFloat(inputValor.value);
 
-            if (isNaN(valor) || valor < 50) {
-                if (!isNaN(valor) && valor > 0 && valor < 50) {
-                    mostrarAviso('O valor mínimo é R$ 50,00.');
+            if (isNaN(valor) || valor < VALOR_MINIMO) {
+                if (!isNaN(valor) && valor > 0 && valor < VALOR_MINIMO) {
+                    mostrarAviso(`O valor mínimo é R$ ${formatar(VALOR_MINIMO)}.`);
                 } else if (isNaN(valor) || valor <= 0) {
-                    mostrarAviso('Informe um valor válido (mínimo R$ 50,00).');
+                    mostrarAviso(`Informe um valor válido (mínimo R$ ${formatar(VALOR_MINIMO)}).`);
                 }
                 listaParcelas.innerHTML = '';
                 esconderBarra();
@@ -805,11 +813,9 @@
                 const totalExibido    = parcela * qtd;
 
                 // Regra de visibilidade:
-                // Se o valor desejado for menor que R$100, mantém todas as parcelas.
-                // Caso contrário, oculta parcelas menores que R$80 (exceto 1x).
-                // 1x sempre aparece.
-// Da 2x em diante, só exibe se a parcela for de R$ 100,00 ou mais.
-if (qtd >= 2 && parcela < 100) continue;
+                // 1x sempre aparece (o valor já passou pelo mínimo).
+                // Da 2x em diante, só exibe se a parcela for >= PARCELA_MINIMA.
+                if (qtd >= 2 && parcela < PARCELA_MINIMA) continue;
 
                 const labelParcela = qtd === 1 ? 'à vista' : 'vezes';
                 const datasTexto = (ativarCalendario.checked && dataPagamento.value)
