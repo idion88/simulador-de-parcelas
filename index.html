@@ -1007,10 +1007,18 @@
             const dados = dadosCalculados[selecionada];
             const valor = parseFloat(inputValor.value);
             const label = selecionada === 1 ? 'à vista' : `${selecionada}x de R$ ${formatar(dados.parcela)}`;
-            const mensagem = [
+            const dataPrimeiroPagamento = (ativarCalendario.checked && dataPagamento.value)
+        ? (() => {
+            const [ano, mes, dia] = dataPagamento.value.split('-');
+            return `Primeiro pagamento: *${dia}/${mes}/${ano}*`;
+        })()
+        : '';
+
+    const mensagem = [
                 `*Simulador de Parcelas*`, ``,
                 `Valor: *R$ ${formatar(valor)}*`,
                 `Parcelamento: *${label}*`,
+        ...(dataPrimeiroPagamento ? [dataPrimeiroPagamento] : []),
                 `Total com taxas: *R$ ${formatar(dados.totalFinal)}*`,
                 ``, `Aguardando sua Resposta !!!`
             ].join('\n');
